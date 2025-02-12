@@ -1,4 +1,4 @@
-package is.hi.hbv601_team_12.ui.home
+package `is`.hi.hbv601_team_12.ui.home
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

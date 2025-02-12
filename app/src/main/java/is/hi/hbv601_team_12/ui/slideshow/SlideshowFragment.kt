@@ -1,4 +1,4 @@
-package is.hi.hbv601_team_12.ui.slideshow
+package `is`.hi.hbv601_team_12.ui.slideshow
 
 import android.os.Bundle
 import android.view.LayoutInflater

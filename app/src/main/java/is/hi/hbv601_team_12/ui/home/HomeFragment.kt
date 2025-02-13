@@ -41,14 +41,12 @@ class HomeFragment : Fragment() {
     }
 
     private fun logoutUser() {
-        // Clear SharedPreferences login state
         val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Context.MODE_PRIVATE)
         with(sharedPref.edit()) {
             putBoolean("isLoggedIn", false)
             apply()
         }
 
-        // Navigate back to LoginFragment
         findNavController().navigate(R.id.loginFragment)
     }
 

@@ -16,3 +16,10 @@ local.properties
 
 # Project exclude paths
 /.gradle/
+
+## Odin extras
+flake.lock
+flake.nix
+gradlew.bat
+gradlew
+gradlew.properties

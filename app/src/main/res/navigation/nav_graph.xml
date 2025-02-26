@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="is.hi.hbv601_team_12.ui.home.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_gallery"
+        android:name="is.hi.hbv601_team_12.ui.gallery.GalleryFragment"
+        android:label="Gallery"
+        tools:layout="@layout/fragment_gallery" />
+
+    <fragment
+        android:id="@+id/nav_slideshow"
+        android:name="is.hi.hbv601_team_12.ui.slideshow.SlideshowFragment"
+        android:label="Slideshow"
+        tools:layout="@layout/fragment_slideshow" />
+
+    <fragment
+        android:id="@+id/groupFragment"
+        android:name="is.hi.hbv601_team_12.ui.group.GroupFragment"
+        android:label="Groups"
+        tools:layout="@layout/fragment_group" />
+
+    <fragment
+        android:id="@+id/createGroupFragment"
+        android:name="is.hi.hbv601_team_12.ui.group.CreateGroupFragment"
+        android:label="Create Group"
+        tools:layout="@layout/fragment_create_group" />
+
+    <fragment
+        android:id="@+id/editGroupFragment"
+        android:name="is.hi.hbv601_team_12.ui.group.EditGroupFragment"
+        android:label="Edit Group"
+        tools:layout="@layout/fragment_edit_group" />
+
+</navigation>

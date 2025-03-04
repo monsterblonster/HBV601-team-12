@@ -20,7 +20,7 @@ import `is`.hi.hbv601_team_12.data.entities.Tag
 import `is`.hi.hbv601_team_12.data.entities.User
 
 @Database(entities = [Comment::class, Event::class, Group::class, Invitation::class,
-                     LogEntry::class, Tag::class, User::class], version = 1, exportSchema = false)
+                     LogEntry::class, Tag::class, User::class], version = 9, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun commentDao(): CommentDao
     abstract fun eventDao(): EventDao
@@ -37,6 +37,7 @@ abstract class AppDatabase : RoomDatabase() {
         fun getDatabase(context: Context): AppDatabase {
             return Instance?: synchronized(this) {
                 Room.databaseBuilder(context, AppDatabase::class.java, "app_database")
+                    .fallbackToDestructiveMigration()
                     .build()
                     .also { Instance = it }
             }

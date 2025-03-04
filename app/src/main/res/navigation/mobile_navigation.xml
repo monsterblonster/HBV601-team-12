@@ -23,21 +23,32 @@
         android:label="@string/menu_slideshow"
         tools:layout="@layout/fragment_slideshow" />
 
-    <!--Login-->
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="is.hi.hbv601_team_12.ui.profile.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_profileFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment"/>
+        <action
+            android:id="@+id/action_profileFragment_to_createGroupFragment"
+            app:destination="@id/createGroupFragment"/>
+    </fragment>
+
     <fragment
         android:id="@+id/loginFragment"
         android:name="is.hi.hbv601_team_12.ui.login.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login">
         <action
-            android:id="@+id/action_loginFragment_to_homeFragment"
-            app:destination="@id/nav_home"/>
+            android:id="@+id/action_loginFragment_to_profileFragment"
+            app:destination="@id/profileFragment"/>
         <action
             android:id="@+id/action_loginFragment_to_registerFragment"
             app:destination="@id/registerFragment"/>
     </fragment>
 
-    <!--Registration-->
     <fragment
         android:id="@+id/registerFragment"
         android:name="is.hi.hbv601_team_12.ui.login.RegisterFragment"
@@ -47,4 +58,18 @@
             android:id="@+id/action_registerFragment_to_loginFragment"
             app:destination="@id/loginFragment"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="is.hi.hbv601_team_12.ui.profile.EditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_edit_profile"/>
+
+    <fragment
+        android:id="@+id/createGroupFragment"
+        android:name="is.hi.hbv601_team_12.ui.profile.CreateGroupFragment"
+        android:label="Create Group"
+        tools:layout="@layout/fragment_create_group"/>
+
+
 </navigation>

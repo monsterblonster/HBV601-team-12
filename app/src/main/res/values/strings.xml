@@ -25,7 +25,10 @@
     <string name="upload_picture">Upload Picture</string>
     <string name="take_picture">Take Picture</string>
     <string name="create_group">Create Group</string>
+    <string name="no_groups_message">You are not a member of any groups.</string>
 
+
+    <string name="menu_profile">Profile</string>
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
@@ -33,6 +36,15 @@
     <string name="username_format">%1$s</string>
     <string name="save_changes">Save Changes</string>
 
-    <string name="menu_profile">Profile</string>
+    <string name="group_name">Group Name</string>
+    <string name="group_description">Description (optional)</string>
+    <string name="group_tags">Tags (comma-separated, optional)</string>
+    <string name="group_max_members">Max Members (optional)</string>
+    <string name="is_admin">(Admin)</string>
+    <string name="group_picture_desc">Group Picture</string>
+    <string name="upload_group_picture">Upload Group Picture</string>
+    <string name="take_group_picture">Take Group Picture</string>
+
+
 
 </resources>

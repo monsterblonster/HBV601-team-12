@@ -1,20 +1,8 @@
 package `is`.hi.hbv601_team_12.data
 
 import android.content.Context
-import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineCommentsRepository
-import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineEventsRepository
-import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository
-import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineInvitationsRepository
-import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineLogEntriesRepository
-import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineTagsRepository
-import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository
-import `is`.hi.hbv601_team_12.data.repositories.CommentsRepository
-import `is`.hi.hbv601_team_12.data.repositories.EventsRepository
-import `is`.hi.hbv601_team_12.data.repositories.GroupsRepository
-import `is`.hi.hbv601_team_12.data.repositories.InvitationsRepository
-import `is`.hi.hbv601_team_12.data.repositories.LogEntriesRepository
-import `is`.hi.hbv601_team_12.data.repositories.TagsRepository
-import `is`.hi.hbv601_team_12.data.repositories.UsersRepository
+import `is`.hi.hbv601_team_12.data.offlineRepositories.*
+import `is`.hi.hbv601_team_12.data.repositories.*
 
 interface AppContainer {
     val commentsRepository: CommentsRepository
@@ -27,31 +15,36 @@ interface AppContainer {
 }
 
 class AppDataContainer(private val context: Context) : AppContainer {
+
+    private val database: AppDatabase by lazy {
+        AppDatabase.getDatabase(context)
+    }
+
     override val commentsRepository: CommentsRepository by lazy {
-        OfflineCommentsRepository(AppDatabase.getDatabase(context).commentDao())
+        OfflineCommentsRepository(database.commentDao())
     }
 
     override val invitationsRepository: InvitationsRepository by lazy {
-        OfflineInvitationsRepository(AppDatabase.getDatabase(context).invitationDao())
+        OfflineInvitationsRepository(database.invitationDao())
     }
 
     override val logEntriesRepository: LogEntriesRepository by lazy {
-        OfflineLogEntriesRepository(AppDatabase.getDatabase(context).logEntryDao())
+        OfflineLogEntriesRepository(database.logEntryDao())
     }
 
     override val tagsRepository: TagsRepository by lazy {
-        OfflineTagsRepository(AppDatabase.getDatabase(context).tagDao())
+        OfflineTagsRepository(database.tagDao())
     }
 
     override val groupsRepository: GroupsRepository by lazy {
-        OfflineGroupsRepository(AppDatabase.getDatabase(context).groupDao())
+        OfflineGroupsRepository(database.groupDao())
     }
 
     override val usersRepository: UsersRepository by lazy {
-        OfflineUsersRepository(AppDatabase.getDatabase(context).userDao())
+        OfflineUsersRepository(database.userDao())
     }
 
     override val eventsRepository: EventsRepository by lazy {
-        OfflineEventsRepository(AppDatabase.getDatabase(context).eventDao())
+        OfflineEventsRepository(database.eventDao())
     }
 }

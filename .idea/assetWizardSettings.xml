@@ -3,6 +3,11 @@
   <component name="WizardSettings">
     <option name="children">
       <map>
+        <entry key="imageWizard">
+          <value>
+            <PersistentState />
+          </value>
+        </entry>
         <entry key="vectorWizard">
           <value>
             <PersistentState>
@@ -28,7 +33,7 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="outputName" value="default_profile" />
+                            <entry key="outputName" value="default_group_image" />
                             <entry key="sourceFile" value="C:\Users\binni\StudioProjects\HBV601-team-12" />
                           </map>
                         </option>

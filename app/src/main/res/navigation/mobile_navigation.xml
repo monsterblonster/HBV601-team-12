@@ -74,7 +74,13 @@
         android:id="@+id/createGroupFragment"
         android:name="is.hi.hbv601_team_12.ui.profile.CreateGroupFragment"
         android:label="Create Group"
-        tools:layout="@layout/fragment_create_group"/>
+        tools:layout="@layout/fragment_create_group">
+
+        <action
+            android:id="@+id/action_createGroupFragment_to_profileFragment"
+            app:destination="@id/profileFragment"/>
+    </fragment>
+
 
 
 </navigation>

@@ -34,6 +34,11 @@
         <action
             android:id="@+id/action_profileFragment_to_createGroupFragment"
             app:destination="@id/createGroupFragment"/>
+        <action
+            android:id="@+id/action_profileFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/profileFragment"
+            app:popUpToInclusive="true"/>
     </fragment>
 
     <fragment

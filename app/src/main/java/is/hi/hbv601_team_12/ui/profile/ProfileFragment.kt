@@ -1,12 +1,15 @@
 package `is`.hi.hbv601_team_12.ui.profile
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
+import androidx.activity.addCallback
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import coil.load
@@ -42,13 +45,34 @@ class ProfileFragment : Fragment() {
 
         loadUserProfile()
 
-        binding.btnEditProfile.setOnClickListener {
-            findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
-        }
+        setupMenu()
+    }
 
-        binding.btnCreateGroup.setOnClickListener {
-            findNavController().navigate(R.id.action_profileFragment_to_createGroupFragment)
-        }
+    private fun setupMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.profile_menu, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_edit_profile -> {
+                        findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
+                        true
+                    }
+                    R.id.action_create_group -> {
+                        findNavController().navigate(R.id.action_profileFragment_to_createGroupFragment)
+                        true
+                    }
+                    R.id.action_logout -> {
+                        showLogoutConfirmation()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     private fun loadUserProfile() {
@@ -85,6 +109,23 @@ class ProfileFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun showLogoutConfirmation() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Logout")
+            .setMessage("Are you sure you want to log out?")
+            .setPositiveButton("Yes") { _, _ -> logoutUser() }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun logoutUser() {
+        val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Activity.MODE_PRIVATE)
+        sharedPref.edit().clear().apply()
+
+        findNavController().navigate(R.id.action_profileFragment_to_loginFragment)
+        requireActivity().finish()
     }
 
     override fun onDestroyView() {

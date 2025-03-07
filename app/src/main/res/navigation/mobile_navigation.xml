@@ -74,7 +74,19 @@
         android:id="@+id/createGroupFragment"
         android:name="is.hi.hbv601_team_12.ui.profile.CreateGroupFragment"
         android:label="Create Group"
-        tools:layout="@layout/fragment_create_group"/>
+    tools:layout="@layout/fragment_create_group"/>
+
+    <fragment
+    android:id="@+id/eventFragment"
+    android:name="is.hi.hbv601_team_12.ui.event.EventFragment"
+    android:label="Event Details">
+    <argument
+        android:name="eventId"
+        app:argType="integer" />
+    <action
+        android:id="@+id/action_eventFragment_to_editEventFragment"
+        app:destination="@id/editEventFragment" />
+   </fragment>
 
 
 </navigation>

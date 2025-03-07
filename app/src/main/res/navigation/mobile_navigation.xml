@@ -39,6 +39,9 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/profileFragment"
             app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_profileFragment_to_groupFragment"
+            app:destination="@id/GroupFragment"/>
     </fragment>
 
     <fragment
@@ -81,6 +84,24 @@
             app:destination="@id/profileFragment"/>
     </fragment>
 
+    <fragment
+        android:id="@+id/editGroupFragment"
+        android:name="is.hi.hbv601_team_12.ui.group.EditGroupFragment"
+        android:label="Edit Group"
+        tools:layout="@layout/fragment_edit_group"/>
 
 
+    <fragment
+        android:id="@+id/GroupFragment"
+        android:name="is.hi.hbv601_team_12.ui.group.GroupFragment"
+        android:label="Group"
+        tools:layout="@layout/fragment_group">
+        <argument
+            android:name="groupId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_groupFragment_to_editGroupFragment"
+            app:destination="@id/editGroupFragment"/>
+
+    </fragment>
 </navigation>

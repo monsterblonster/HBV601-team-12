@@ -38,12 +38,18 @@
 
     <string name="group_name">Group Name</string>
     <string name="group_description">Description (optional)</string>
-    <string name="group_tags">Tags (comma-separated, optional)</string>
+    <string name="group_tags">Tags: %1$s</string>
     <string name="group_max_members">Max Members (optional)</string>
     <string name="is_admin">(Admin)</string>
     <string name="group_picture_desc">Group Picture</string>
     <string name="upload_group_picture">Upload Group Picture</string>
     <string name="take_group_picture">Take Group Picture</string>
+
+    <string name="edit_group">Edit Group</string>
+    <string name="delete_group">Delete Group</string>
+    <string name="members">Members</string>
+    <string name="change_group_picture">Change Group Picture</string>
+
 
 
 

@@ -126,13 +126,10 @@ class ProfileFragment : Fragment() {
         }
     }
 
-
-
     private fun loadUserGroups(userId: Int) {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val userGroupsFlow = groupsRepository.getAllGroupsStream()
-                val adminGroupsFlow = groupsRepository.getGroupsByAdmin(userId)
 
                 userGroupsFlow.collect { groups ->
                     withContext(Dispatchers.Main) {
@@ -144,7 +141,9 @@ class ProfileFragment : Fragment() {
                         } else {
                             binding.noGroupsTextView.visibility = View.GONE
                             binding.groupsRecyclerView.visibility = View.VISIBLE
-                            groupsAdapter = GroupsAdapter(groups, userId)
+                            groupsAdapter = GroupsAdapter(groups, userId) { groupId ->
+                                onGroupClicked(groupId)
+                            }
                             binding.groupsRecyclerView.adapter = groupsAdapter
                         }
                     }
@@ -157,6 +156,15 @@ class ProfileFragment : Fragment() {
             }
         }
     }
+
+    private fun onGroupClicked(groupId: String) {
+        val bundle = Bundle().apply {
+            putString("groupId", groupId)
+        }
+        findNavController().navigate(R.id.action_profileFragment_to_groupFragment, bundle)
+    }
+
+
 
 
     private fun showLogoutConfirmation() {

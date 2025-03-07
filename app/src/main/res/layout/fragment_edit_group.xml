@@ -1,0 +1,79 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/ivGroupPicture"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/group_picture_desc"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/btnChangeGroupPicture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/change_group_picture"
+        app:layout_constraintTop_toBottomOf="@id/ivGroupPicture"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
+
+    <EditText
+        android:id="@+id/etGroupName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/group_name"
+        android:inputType="textPersonName"
+        android:autofillHints="name"
+        android:minHeight="48dp"
+        app:layout_constraintTop_toBottomOf="@id/btnChangeGroupPicture"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <EditText
+        android:id="@+id/etGroupDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/group_description"
+        android:inputType="textMultiLine"
+        android:autofillHints="name"
+        android:minHeight="48dp"
+        app:layout_constraintTop_toBottomOf="@id/etGroupName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
+
+
+    <EditText
+        android:id="@+id/etGroupTags"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:autofillHints="tags"
+        android:hint="@string/group_tags"
+        android:inputType="text"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/etGroupDescription" />
+
+    <Button
+        android:id="@+id/btnSaveGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="76dp"
+        android:text="@string/save_changes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/etGroupDescription" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

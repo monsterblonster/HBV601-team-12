@@ -4,6 +4,7 @@ import `is`.hi.hbv601_team_12.data.daos.GroupDao
 import `is`.hi.hbv601_team_12.data.entities.Group
 import `is`.hi.hbv601_team_12.data.repositories.GroupsRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class OfflineGroupsRepository(private val groupDao: GroupDao) : GroupsRepository {
 
@@ -11,8 +12,10 @@ class OfflineGroupsRepository(private val groupDao: GroupDao) : GroupsRepository
         return groupDao.getAllGroups()
     }
 
-    override fun getGroupStream(id: Int): Flow<Group> {
-        return groupDao.getGroup(id)
+    override fun getGroupStream(id: Int): Flow<Group?> {
+        return flow {
+            emit(groupDao.getGroup(id))
+        }
     }
 
     override fun getGroupsByAdmin(adminId: Int): Flow<List<Group>> {

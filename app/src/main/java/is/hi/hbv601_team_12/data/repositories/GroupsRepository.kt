@@ -5,9 +5,14 @@ import kotlinx.coroutines.flow.Flow
 
 interface GroupsRepository {
     fun getAllGroupsStream(): Flow<List<Group>>
-    fun getGroupStream(id: Int): Flow<Group>
+
+    fun getGroupStream(id: Int): Flow<Group?>
+
     fun getGroupsByAdmin(adminId: Int): Flow<List<Group>>
+
     suspend fun insertGroup(group: Group)
+
     suspend fun deleteGroup(group: Group)
+
     suspend fun updateGroup(group: Group)
 }

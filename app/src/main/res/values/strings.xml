@@ -47,6 +47,7 @@
 
     <string name="edit_group">Edit Group</string>
     <string name="delete_group">Delete Group</string>
+    <string name="leave_group">Leave Group</string>
     <string name="members">Members</string>
     <string name="change_group_picture">Change Group Picture</string>
 

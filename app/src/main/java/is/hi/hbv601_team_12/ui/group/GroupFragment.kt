@@ -14,6 +14,7 @@ import coil.load
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.entities.Group
 import `is`.hi.hbv601_team_12.data.repositories.GroupsRepository
+import `is`.hi.hbv601_team_12.data.repositories.UsersRepository
 import `is`.hi.hbv601_team_12.databinding.FragmentGroupBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,6 +26,7 @@ class GroupFragment : Fragment() {
     private val binding get() = _binding!!
     private var groupId: Int? = null
     private lateinit var groupsRepository: GroupsRepository
+    private lateinit var usersRepository: UsersRepository
     private var isAdmin: Boolean = false
     private lateinit var currentGroup: Group
 
@@ -41,9 +43,9 @@ class GroupFragment : Fragment() {
 
         setupMenu()
 
-        groupsRepository = `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository(
-            `is`.hi.hbv601_team_12.data.AppDatabase.getDatabase(requireContext()).groupDao()
-        )
+        val db = `is`.hi.hbv601_team_12.data.AppDatabase.getDatabase(requireContext())
+        groupsRepository = `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository(db.groupDao())
+        usersRepository = `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository(db.userDao())
 
         groupId = arguments?.getString("groupId")?.toIntOrNull()
 
@@ -106,7 +108,6 @@ class GroupFragment : Fragment() {
         toolbar?.title = "Group: ${group.name}"
     }
 
-
     private fun setupMenu() {
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
@@ -114,6 +115,7 @@ class GroupFragment : Fragment() {
                 menuInflater.inflate(R.menu.group_menu, menu)
                 menu.findItem(R.id.action_edit_group)?.isVisible = isAdmin
                 menu.findItem(R.id.action_delete_group)?.isVisible = isAdmin
+                menu.findItem(R.id.action_leave_group)?.isVisible = true
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -129,10 +131,84 @@ class GroupFragment : Fragment() {
                         showDeleteConfirmationDialog()
                         true
                     }
+                    R.id.action_leave_group -> {
+                        showLeaveConfirmationDialog()
+                        true
+                    }
                     else -> false
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+
+    private fun showLeaveConfirmationDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Leave Group")
+            .setMessage("Are you sure you want to leave this group?")
+            .setPositiveButton("Leave") { _, _ -> leaveGroup() }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun leaveGroup() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val currentUserId = getCurrentUserID()
+            val updatedMembers = currentGroup.getMemberList().filterNot { it == currentUserId }
+
+            if (currentUserId == currentGroup.adminId) {
+                withContext(Dispatchers.Main) {
+                    if (updatedMembers.isEmpty()) {
+                        showDeleteConfirmationDialog()
+                    } else {
+                        showAdminTransferDialog(updatedMembers)
+                    }
+                }
+            } else {
+                val updatedGroup = currentGroup.copy(members = updatedMembers.joinToString(","))
+                groupsRepository.updateGroup(updatedGroup)
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "You have left the group.", Toast.LENGTH_SHORT).show()
+                    findNavController().navigateUp()
+                }
+            }
+        }
+    }
+
+
+    private fun showAdminTransferDialog(otherMembers: List<Int>) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val memberNames = otherMembers.map { userId ->
+                usersRepository.getUserById(userId)?.username ?: "Unknown"
+            }
+
+            withContext(Dispatchers.Main) {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Select a new admin before leaving")
+                    .setItems(memberNames.toTypedArray()) { _, which ->
+                        val newAdminId = otherMembers[which]
+                        transferAdminAndLeave(newAdminId)
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+        }
+    }
+
+
+    private fun transferAdminAndLeave(newAdminId: Int) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val updatedMembers = currentGroup.getMemberList().filterNot { it == getCurrentUserID() }
+            val updatedGroup = currentGroup.copy(adminId = newAdminId, members = updatedMembers.joinToString(","))
+
+            groupsRepository.updateGroup(updatedGroup)
+
+            withContext(Dispatchers.Main) {
+                Toast.makeText(requireContext(), "Admin rights transferred. You have left the group.", Toast.LENGTH_SHORT).show()
+                findNavController().navigateUp()
+            }
+        }
     }
 
     private fun showDeleteConfirmationDialog() {
@@ -153,6 +229,7 @@ class GroupFragment : Fragment() {
             }
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

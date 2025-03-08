@@ -17,7 +17,7 @@ import `is`.hi.hbv601_team_12.data.entities.*
         Tag::class,
         User::class
     ],
-    version = 14,
+    version = 15,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -15,4 +15,6 @@ interface GroupsRepository {
     suspend fun deleteGroup(group: Group)
 
     suspend fun updateGroup(group: Group)
+
+    suspend fun updateGroupMembers(groupId: Int, newMembers: List<Int>)
 }

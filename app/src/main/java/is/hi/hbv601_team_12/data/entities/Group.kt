@@ -12,5 +12,14 @@ data class Group(
     val tags: String? = null,
     val maxMembers: Int = 10,
     val adminId: Int,
-    val groupPicture: String? = null
-)
+    val groupPicture: String? = null,
+    val members: String = ""
+) {
+    fun getMemberList(): List<Int> {
+        return if (members.isBlank()) emptyList() else members.split(",").mapNotNull { it.trim().toIntOrNull() }
+    }
+
+    fun updateMembers(newMembers: List<Int>): Group {
+        return this.copy(members = newMembers.joinToString(","))
+    }
+}

@@ -33,4 +33,14 @@ class OfflineGroupsRepository(private val groupDao: GroupDao) : GroupsRepository
     override suspend fun deleteGroup(group: Group) {
         return groupDao.delete(group)
     }
+
+    override suspend fun updateGroupMembers(groupId: Int, newMembers: List<Int>) {
+        val group = groupDao.getGroup(groupId)
+        if (group != null) {
+            val updatedGroup = group.updateMembers(newMembers)
+            groupDao.update(updatedGroup)
+        }
+    }
+
+
 }

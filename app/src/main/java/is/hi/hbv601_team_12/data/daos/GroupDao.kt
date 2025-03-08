@@ -21,12 +21,16 @@ interface GroupDao {
     @Delete
     suspend fun delete(group: Group)
 
-    @Query("SELECT * FROM groups WHERE id = :id")
+    @Query("SELECT * FROM `groups` WHERE id = :id")
     suspend fun getGroup(id: Int): Group?
 
-    @Query("SELECT * FROM groups ORDER BY id ASC")
+    @Query("SELECT * FROM `groups` ORDER BY id ASC")
     fun getAllGroups(): Flow<List<Group>>
 
-    @Query("SELECT * FROM groups WHERE adminId = :adminId ORDER BY id ASC")
+    @Query("SELECT * FROM `groups` WHERE adminId = :adminId ORDER BY id ASC")
     fun getGroupsByAdmin(adminId: Int): Flow<List<Group>>
+
+    @Query("UPDATE `groups` SET members = :newMembers WHERE id = :groupId")
+    suspend fun updateGroupMembers(groupId: Int, newMembers: String)
 }
+

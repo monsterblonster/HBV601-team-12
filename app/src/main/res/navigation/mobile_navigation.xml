@@ -77,15 +77,32 @@
     tools:layout="@layout/fragment_create_group"/>
 
     <fragment
-    android:id="@+id/eventFragment"
-    android:name="is.hi.hbv601_team_12.ui.event.EventFragment"
-    android:label="Event Details">
-    <argument
-        android:name="eventId"
-        app:argType="integer" />
-    <action
-      android:id="@+id/action_eventFragment_to_editEventFragment"
-      android:name="is.hi.hbv601_team_12.ui.event.EditEventFragment"/>
-     </fragment>
+        android:id="@+id/createEventFragment"
+        android:name="is.hi.hbv601_team_12.ui.event.CreateEventFragment"
+        tools:layout="@layout/fragment_create_event">
+        <action
+            android:id="@+id/action_createEventFragment_to_eventFragment"
+            app:destination="@id/eventFragment" />
+    </fragment>
 
+    <fragment
+        android:id="@+id/eventFragment"
+        android:name="is.hi.hbv601_team_12.ui.fragments.EventFragment"
+        tools:layout="@layout/fragment_event">
+        <argument
+            android:name="eventId"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_eventFragment_to_editEventFragment"
+            app:destination="@id/editEventFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/editEventFragment"
+        android:name="is.hi.hbv601_team_12.ui.fragments.EditEventFragment"
+        tools:layout="@layout/fragment_create_event">
+        <argument
+            android:name="eventId"
+            app:argType="integer" />
+    </fragment>
 </navigation>

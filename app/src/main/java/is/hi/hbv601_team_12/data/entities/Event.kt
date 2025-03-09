@@ -23,6 +23,7 @@ data class Event(
     
     // ekki viss hvort þessi eru must
     var isPublic: Boolean = true,
+
     var maxParticipants: Int? = null
     
 )

@@ -27,24 +27,24 @@
         android:layout_marginTop="16dp" />
 
     <TextView
-        android:id="@+id/eventEndTimeTextView"
+        android:id="@+id/eventDurationTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="End Time"
+        android:text="Duration"
         android:layout_marginTop="8dp" />
 
-    <Button
-        android:id="@+id/viewParticipantsButton"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/eventLocationTextView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="View Participants"
-        android:layout_marginTop="24dp" />
+        android:text="Location"
+        android:layout_marginTop="8dp" />
 
     <Button
         android:id="@+id/editEventButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Edit Event"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="24dp" />
 
 </LinearLayout>

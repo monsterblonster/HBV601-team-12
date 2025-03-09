@@ -22,7 +22,7 @@ import `is`.hi.hbv601_team_12.data.entities.Tag
 import `is`.hi.hbv601_team_12.data.entities.User
 import `is`.hi.hbv601_team_12.data.entities.EventParticipant
 
-@Database(entities = [Comment::class, Event::class, Group::class, Invitation::class, LogEntry::class, Tag::class, User::class, EventParticipant::class], version = 9, exportSchema = false)
+@Database(entities = [Comment::class, Event::class, Group::class, Invitation::class, LogEntry::class, Tag::class, User::class, EventParticipant::class], version =10, exportSchema = false)
 @TypeConverters(DateTimeConverters::class)  
 abstract class AppDatabase : RoomDatabase() {
     abstract fun commentDao(): CommentDao

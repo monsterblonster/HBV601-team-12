@@ -90,8 +90,6 @@
         android:label="Edit Group"
         tools:layout="@layout/fragment_edit_group"/>
 
-            <!-- android:id="@+id/action_createEventFragment_to_eventFragment" -->
-
     <fragment
     android:id="@+id/createEventFragment"
     android:name="is.hi.hbv601_team_12.ui.event.CreateEventFragment"
@@ -100,7 +98,6 @@
         android:name="groupId"
         app:argType="integer" />
     </fragment>
-
     <fragment
         android:id="@+id/eventFragment"
         android:name="is.hi.hbv601_team_12.ui.event.EventFragment"
@@ -119,8 +116,8 @@
         tools:layout="@layout/fragment_create_event">
         <argument
             android:name="eventId"
-      app:argType="integer" />
-  </fragment>
+            app:argType="integer" />
+    </fragment>
   <fragment
         android:id="@+id/GroupFragment"
         android:name="is.hi.hbv601_team_12.ui.group.GroupFragment"

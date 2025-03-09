@@ -18,11 +18,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
-
 class EditEventFragment : Fragment() {
 
     private lateinit var eventsRepository: OfflineEventsRepository
     private var event: Event? = null
+    // TODO vantar group tengingu
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,7 +31,7 @@ class EditEventFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_create_event, container, false)
 
         val db = `is`.hi.hbv601_team_12.data.AppDatabase.getDatabase(requireContext())
-        eventsRepository = OfflineEventsRepository(db.eventDao()) 
+        eventsRepository = OfflineEventsRepository(db.eventDao())
 
         val eventId = arguments?.getInt("eventId") ?: 0
 
@@ -46,8 +46,8 @@ class EditEventFragment : Fragment() {
         view.findViewById<Button>(R.id.saveEventButton).setOnClickListener {
             val eventName = view.findViewById<EditText>(R.id.eventNameEditText).text.toString()
             val eventDescription = view.findViewById<EditText>(R.id.eventDescriptionEditText).text.toString()
-            val startDateTime = LocalDateTime.now() // Placeholder 
-            val durationMinutes = 120 // Placeholder 
+            val startDateTime = LocalDateTime.now() // Placeholder
+            val durationMinutes = 120 // Placeholder
             val location = "Some Location" // Placeholder
 
             event?.let {
@@ -61,7 +61,6 @@ class EditEventFragment : Fragment() {
                     eventsRepository.updateEvent(it)
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "Event updated successfully!", Toast.LENGTH_SHORT).show()
-                        
                         findNavController().navigateUp()
                     }
                 }

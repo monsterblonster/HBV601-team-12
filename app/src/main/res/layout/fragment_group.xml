@@ -1,6 +1,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
@@ -96,13 +97,12 @@
         android:id="@+id/fabCreateEvent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
         android:layout_margin="16dp"
         android:contentDescription="create_event"
-        android:src="@drawable/ic_add" 
-        app:backgroundTint="@android:color/black" 
-        app:tint="@android:color/white" 
-        app:elevation="8dp" />
-
+        android:src="@drawable/ic_add"
+        app:backgroundTint="@android:color/black"
+        app:elevation="8dp"
+        app:tint="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

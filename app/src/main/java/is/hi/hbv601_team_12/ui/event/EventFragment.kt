@@ -85,4 +85,11 @@ class EventFragment : Fragment() {
             }
         }
     }
+        private fun navigateToEditEventFragment() {
+        val eventId = eventId ?: return
+
+        val bundle = Bundle().apply {
+            putInt("eventId", eventId)
+    }
+}
 }

@@ -17,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
-
 class CreateEventFragment : Fragment() {
 
     private lateinit var eventsRepository: OfflineEventsRepository
@@ -28,16 +27,15 @@ class CreateEventFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_create_event, container, false)
 
-        // Initialize the OfflineEventsRepository
-        val db = AppDatabase.getDatabase(requireContext()) // Assuming you have an AppDatabase class
-        eventsRepository = OfflineEventsRepository(db.eventDao()) // Pass the DAO to the repository
+        val db = AppDatabase.getDatabase(requireContext())
+        eventsRepository = OfflineEventsRepository(db.eventDao())
 
         view.findViewById<Button>(R.id.saveEventButton).setOnClickListener {
             val eventName = view.findViewById<EditText>(R.id.eventNameEditText).text.toString()
             val eventDescription = view.findViewById<EditText>(R.id.eventDescriptionEditText).text.toString()
-            val startDateTime = LocalDateTime.now() // Placeholder, replace with actual date picker logic
-            val durationMinutes = 120 // Placeholder, replace with actual logic
-            val location = "Some Location" // Placeholder, replace with actual logic
+            val startDateTime = LocalDateTime.now() // Placeholder
+            val durationMinutes = 120 // Placeholder
+            val location = "Some Location" // Placeholder
 
             lifecycleScope.launch(Dispatchers.IO) {
                 val eventId = eventsRepository.createEvent(
@@ -45,17 +43,16 @@ class CreateEventFragment : Fragment() {
                     description = eventDescription,
                     startDateTime = startDateTime,
                     durationMinutes = durationMinutes,
-                    creatorId = 1, // Placeholder, replace with actual user ID
+                    creatorId = 1, // Placeholder
                     location = location,
                     isPublic = true,
                     maxParticipants = null
                 )
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), "Event created successfully!", Toast.LENGTH_SHORT).show()
-                    
-                    // Navigate to the EventFragment with the new event's ID
+
                     val bundle = Bundle().apply {
-                        putInt("eventId", eventId.toInt()) // Convert Long to Int
+                        putInt("eventId", eventId.toInt()) 
                     }
                     findNavController().navigate(R.id.action_createEventFragment_to_eventFragment, bundle)
                 }

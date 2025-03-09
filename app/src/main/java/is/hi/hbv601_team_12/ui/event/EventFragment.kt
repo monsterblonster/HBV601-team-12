@@ -11,7 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.entities.Event
-import `is`.hi.hbv601_team_12.data.repositories.EventsRepository
+import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineEventsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter
 
 class EventFragment : Fragment() {
 
-    private lateinit var eventsRepository: EventsRepository
+    private lateinit var eventsRepository: OfflineEventsRepository
     private var event: Event? = null
 
     override fun onCreateView(
@@ -29,13 +29,12 @@ class EventFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_event, container, false)
 
-        // Initialize the EventsRepository (you might need to pass this via dependency injection)
-        // eventsRepository = ...
+        val db = `is`.hi.hbv601_team_12.data.AppDatabase.getDatabase(requireContext())
+        eventsRepository = OfflineEventsRepository(db.eventDao())
 
-        // Get the event ID from the arguments
+
         val eventId = arguments?.getInt("eventId") ?: 0
 
-        // Load the event details
         lifecycleScope.launch(Dispatchers.IO) {
             event = eventsRepository.getEventStream(eventId).first()
             withContext(Dispatchers.Main) {
@@ -47,9 +46,7 @@ class EventFragment : Fragment() {
             }
         }
 
-        // Set up the edit event button
         view.findViewById<Button>(R.id.editEventButton).setOnClickListener {
-            // Navigate to the EditEventFragment
             val bundle = Bundle().apply {
                 putInt("eventId", eventId)
             }

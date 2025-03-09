@@ -22,7 +22,7 @@ import `is`.hi.hbv601_team_12.data.entities.*
         User::class,
         EventParticipant::class,
     ],
-    version = 11,
+    version = 12, // afh þarf eg allfat að fikta i þessu??
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

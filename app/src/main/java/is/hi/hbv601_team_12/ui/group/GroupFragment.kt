@@ -85,14 +85,13 @@ class GroupFragment : Fragment() {
     }
 
     private fun fetchEventsForGroup(groupId: Int) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val events = groupsRepository.getEventsForGroup(groupId)
-            withContext(Dispatchers.Main) {
-                eventAdapter.submitList(events)
-            }
+       lifecycleScope.launch(Dispatchers.IO) {
+          val events = groupsRepository.getEventsForGroup(groupId)
+          withContext(Dispatchers.Main) {
+            eventAdapter.submitList(events)
         }
     }
-
+  }
     private fun checkAdminPrivileges(adminId: Int) {
         val currentUserID = getCurrentUserID()
         isAdmin = (currentUserID == adminId)

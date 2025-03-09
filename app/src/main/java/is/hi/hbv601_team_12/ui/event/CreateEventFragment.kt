@@ -73,7 +73,7 @@ class CreateEventFragment : Fragment() {
                     val bundle = Bundle().apply {
                         putInt("eventId", eventId.toInt())
                     }
-                    findNavController().navigate(R.id.createEventFragment, bundle)
+                    findNavController().navigate(R.id.eventFragment, bundle)
                 }
             }
         }

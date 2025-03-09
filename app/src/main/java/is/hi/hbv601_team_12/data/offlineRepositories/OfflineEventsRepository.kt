@@ -7,11 +7,11 @@ import `is`.hi.hbv601_team_12.data.entities.ParticipantStatus
 import `is`.hi.hbv601_team_12.data.entities.User
 import `is`.hi.hbv601_team_12.data.repositories.EventsRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import java.time.LocalDateTime
 
 class OfflineEventsRepository(private val eventDao: EventDao) : EventsRepository {
 
-    // Implement the methods from the EventsRepository interface
 
     override fun getAllEventsStream(): Flow<List<Event>> {
         return eventDao.getAllEvents()
@@ -33,7 +33,6 @@ class OfflineEventsRepository(private val eventDao: EventDao) : EventsRepository
         eventDao.deleteEvent(event)
     }
 
-    // Additional methods specific to OfflineEventsRepository
 
     suspend fun createEvent(
         name: String,
@@ -58,6 +57,10 @@ class OfflineEventsRepository(private val eventDao: EventDao) : EventsRepository
         return eventDao.insertEvent(event)
     }
 
+    suspend fun getEventById(id: Int): Event? {
+      return eventDao.getEventById(id).firstOrNull()
+    }
+
     fun getEventsByCreator(userId: Int): Flow<List<Event>> {
         return eventDao.getEventsByCreator(userId)
     }
@@ -69,6 +72,13 @@ class OfflineEventsRepository(private val eventDao: EventDao) : EventsRepository
             status = status,
         )
         eventDao.addParticipant(participant)
+    }
+
+    suspend fun inviteUsersToEvent(eventId: Int, userIds: List<Int>) {
+        val participants = userIds.map { userId ->
+            EventParticipant(eventId = eventId, userId = userId, status = ParticipantStatus.INVITED)
+        }
+        eventDao.addParticipants(participants)
     }
 
     suspend fun removeParticipant(eventId: Int, userId: Int) {

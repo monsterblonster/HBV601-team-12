@@ -32,5 +32,9 @@ interface GroupDao {
 
     @Query("UPDATE `groups` SET members = :newMembers WHERE id = :groupId")
     suspend fun updateGroupMembers(groupId: Int, newMembers: String)
+
+    @Query("SELECT * FROM groups WHERE id = :groupId")
+    suspend fun getGroupById(groupId: Int): Group?
 }
+
 

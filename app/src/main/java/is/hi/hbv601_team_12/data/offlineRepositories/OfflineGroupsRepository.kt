@@ -17,6 +17,9 @@ class OfflineGroupsRepository(private val groupDao: GroupDao) : GroupsRepository
             emit(groupDao.getGroup(id))
         }
     }
+    suspend fun getGroupById(groupId: Int): Group? {
+        return groupDao.getGroupById(groupId)
+    }
 
     override fun getGroupsByAdmin(adminId: Int): Flow<List<Group>> {
         return groupDao.getGroupsByAdmin(adminId)

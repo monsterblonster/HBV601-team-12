@@ -12,16 +12,18 @@ data class Event(
     val id: Int = 0,
     
     var name: String,
+
     var description: String?,
     
     var startDateTime: LocalDateTime,
+
     var durationMinutes: Int, 
     
     var creatorId: Int,
     
-    var location: String?,
-    
-    // ekki viss hvort þessi eru must
+    //  Optional
+    var location: String? = null, 
+
     var isPublic: Boolean = true,
 
     var maxParticipants: Int? = null

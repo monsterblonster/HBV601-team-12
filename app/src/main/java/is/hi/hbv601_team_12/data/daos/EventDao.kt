@@ -28,6 +28,9 @@ interface EventDao {
     
     @Insert
     suspend fun addParticipant(eventParticipant: EventParticipant)
+
+    @Insert
+    suspend fun addParticipants(participants: List<EventParticipant>)
     
     @Delete
     suspend fun removeParticipant(eventParticipant: EventParticipant)
@@ -44,7 +47,7 @@ interface EventDao {
         WHERE ep.eventId = :eventId
     """)
     suspend fun getUsersForEvent(eventId: Int): List<User>
-    
+
     @Query("""
         SELECT e.* FROM events e
         INNER JOIN event_participants ep ON e.id = ep.eventId

@@ -97,6 +97,9 @@
         <action
             android:id="@+id/action_createEventFragment_to_eventFragment"
             app:destination="@id/eventFragment" />
+          <argument
+              android:name="groupId"
+              app:argType="integer" />
     </fragment>
 
     <fragment

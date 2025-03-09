@@ -1,5 +1,6 @@
 package `is`.hi.hbv601_team_12.data.repositories
 
+import `is`.hi.hbv601_team_12.data.entities.Event
 import `is`.hi.hbv601_team_12.data.entities.Group
 import kotlinx.coroutines.flow.Flow
 
@@ -17,4 +18,6 @@ interface GroupsRepository {
     suspend fun updateGroup(group: Group)
 
     suspend fun updateGroupMembers(groupId: Int, newMembers: List<Int>)
+
+    suspend fun getEventsForGroup(groupId: Int): List<Event>
 }

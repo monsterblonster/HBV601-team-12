@@ -54,7 +54,8 @@ class CreateEventFragment : Fragment() {
                     creatorId = getCurrentUserId(),
                     location = location,
                     isPublic = true,
-                    maxParticipants = null
+                    maxParticipants = null,
+                    groupId = groupId!!
                 )
 
                 // Invite all users in the group to the event
@@ -72,7 +73,7 @@ class CreateEventFragment : Fragment() {
                     val bundle = Bundle().apply {
                         putInt("eventId", eventId.toInt())
                     }
-                    findNavController().navigate(R.id.action_createEventFragment_to_eventFragment, bundle)
+                    findNavController().navigate(R.id.createEventFragment, bundle)
                 }
             }
         }

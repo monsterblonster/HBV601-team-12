@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import `is`.hi.hbv601_team_12.data.entities.Event
 import `is`.hi.hbv601_team_12.data.entities.Group
 import kotlinx.coroutines.flow.Flow
 
@@ -35,6 +36,9 @@ interface GroupDao {
 
     @Query("SELECT * FROM groups WHERE id = :groupId")
     suspend fun getGroupById(groupId: Int): Group?
+
+    @Query("SELECT * FROM events WHERE groupId = :groupId")
+    suspend fun getEventsForGroup(groupId: Int): List<Event>
 }
 
 

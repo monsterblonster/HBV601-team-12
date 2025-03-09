@@ -10,9 +10,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.entities.Group
+import `is`.hi.hbv601_team_12.data.entities.Event
 import `is`.hi.hbv601_team_12.data.repositories.GroupsRepository
 import `is`.hi.hbv601_team_12.data.repositories.UsersRepository
 import `is`.hi.hbv601_team_12.databinding.FragmentGroupBinding
@@ -29,6 +31,7 @@ class GroupFragment : Fragment() {
     private lateinit var usersRepository: UsersRepository
     private var isAdmin: Boolean = false
     private lateinit var currentGroup: Group
+    private lateinit var eventAdapter: EventAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,10 +54,15 @@ class GroupFragment : Fragment() {
         groupsRepository = `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository(db.groupDao())
         usersRepository = `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository(db.userDao())
 
+        eventAdapter = EventAdapter()
+        binding.eventsRecyclerView.adapter = eventAdapter
+        binding.eventsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+
         groupId = arguments?.getString("groupId")?.toIntOrNull()
 
         if (groupId != null) {
             fetchGroupDetails(groupId!!)
+            fetchEventsForGroup(groupId!!)
         } else {
             Toast.makeText(requireContext(), "Invalid Group ID!", Toast.LENGTH_SHORT).show()
         }
@@ -72,6 +80,15 @@ class GroupFragment : Fragment() {
                         Toast.makeText(requireContext(), "Group details not found!", Toast.LENGTH_SHORT).show()
                     }
                 }
+            }
+        }
+    }
+
+    private fun fetchEventsForGroup(groupId: Int) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val events = groupsRepository.getEventsForGroup(groupId)
+            withContext(Dispatchers.Main) {
+                eventAdapter.submitList(events)
             }
         }
     }
@@ -145,7 +162,6 @@ class GroupFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-
     private fun showLeaveConfirmationDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle("Leave Group")
@@ -180,7 +196,6 @@ class GroupFragment : Fragment() {
         }
     }
 
-
     private fun showAdminTransferDialog(otherMembers: List<Int>) {
         lifecycleScope.launch(Dispatchers.IO) {
             val memberNames = otherMembers.map { userId ->
@@ -199,7 +214,6 @@ class GroupFragment : Fragment() {
             }
         }
     }
-
 
     private fun transferAdminAndLeave(newAdminId: Int) {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -233,15 +247,13 @@ class GroupFragment : Fragment() {
             }
         }
     }
-    private fun navigateToCreateEvent() {
-      val bundle = Bundle().apply {
-          putInt("groupId", groupId ?: -1) 
-        }
-        findNavController().navigate(R.id.createEventFragment, bundle)
+
+  private fun navigateToCreateEvent() {
+     val bundle = Bundle().apply {
+        putInt("groupId", groupId ?: -1)
     }
-
-
-
+    findNavController().navigate(R.id.createEventFragment, bundle)
+  }
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

@@ -41,6 +41,7 @@ class OfflineEventsRepository(private val eventDao: EventDao) : EventsRepository
         durationMinutes: Int,
         creatorId: Int,
         location: String?,
+        groupId: Int,
         isPublic: Boolean = true,
         maxParticipants: Int? = null
     ): Long {
@@ -52,7 +53,8 @@ class OfflineEventsRepository(private val eventDao: EventDao) : EventsRepository
             creatorId = creatorId,
             location = location,
             isPublic = isPublic,
-            maxParticipants = maxParticipants
+            maxParticipants = maxParticipants,
+            groupId = groupId
         )
         return eventDao.insertEvent(event)
     }

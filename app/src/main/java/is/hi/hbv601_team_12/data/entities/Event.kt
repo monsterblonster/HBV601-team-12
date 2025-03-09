@@ -8,24 +8,17 @@ import java.time.LocalDateTime
     tableName = "events",
 )
 data class Event(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val groupId: Int,
     var name: String,
-
     var description: String?,
-    
     var startDateTime: LocalDateTime,
-
     var durationMinutes: Int, 
-    
     var creatorId: Int,
-    
+
     //  Optional
     var location: String? = null, 
-
     var isPublic: Boolean = true,
-
     var maxParticipants: Int? = null
     
 )

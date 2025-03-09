@@ -90,16 +90,15 @@
         android:label="Edit Group"
         tools:layout="@layout/fragment_edit_group"/>
 
+            <!-- android:id="@+id/action_createEventFragment_to_eventFragment" -->
+
     <fragment
-        android:id="@+id/createEventFragment"
-        android:name="is.hi.hbv601_team_12.ui.event.CreateEventFragment"
-        tools:layout="@layout/fragment_create_event">
-        <action
-            android:id="@+id/action_createEventFragment_to_eventFragment"
-            app:destination="@id/eventFragment" />
-          <argument
-              android:name="groupId"
-              app:argType="integer" />
+    android:id="@+id/createEventFragment"
+    android:name="is.hi.hbv601_team_12.ui.event.CreateEventFragment"
+    tools:layout="@layout/fragment_create_event">
+    <argument
+        android:name="groupId"
+        app:argType="integer" />
     </fragment>
 
     <fragment

@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters  
+import `is`.hi.hbv601_team_12.data.converters.DateTimeConverters  
 import `is`.hi.hbv601_team_12.data.daos.CommentDao
 import `is`.hi.hbv601_team_12.data.daos.EventDao
 import `is`.hi.hbv601_team_12.data.daos.GroupDao
@@ -18,9 +20,10 @@ import `is`.hi.hbv601_team_12.data.entities.Invitation
 import `is`.hi.hbv601_team_12.data.entities.LogEntry
 import `is`.hi.hbv601_team_12.data.entities.Tag
 import `is`.hi.hbv601_team_12.data.entities.User
+import `is`.hi.hbv601_team_12.data.entities.EventParticipant
 
-@Database(entities = [Comment::class, Event::class, Group::class, Invitation::class,
-                     LogEntry::class, Tag::class, User::class], version = 9, exportSchema = false)
+@Database(entities = [Comment::class, Event::class, Group::class, Invitation::class, LogEntry::class, Tag::class, User::class, EventParticipant::class], version = 9, exportSchema = false)
+@TypeConverters(DateTimeConverters::class)  
 abstract class AppDatabase : RoomDatabase() {
     abstract fun commentDao(): CommentDao
     abstract fun eventDao(): EventDao

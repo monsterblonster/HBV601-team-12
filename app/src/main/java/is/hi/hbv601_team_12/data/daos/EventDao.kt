@@ -1,4 +1,4 @@
-package `is`.hi.hbv601_team_12.data.dao
+package `is`.hi.hbv601_team_12.data.daos
 
 import androidx.room.*
 import `is`.hi.hbv601_team_12.data.entities.Event

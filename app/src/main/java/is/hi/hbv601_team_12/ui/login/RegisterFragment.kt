@@ -153,14 +153,28 @@ class RegisterFragment : Fragment() {
                         profilePicture = profilePicturePath
                     )
 
-                    lifecycleScope.launch(Dispatchers.IO) { repository.insertUser(newUser) }
+                    repository.insertUser(newUser)
 
-                    Toast.makeText(requireContext(), "Registration Successful!", Toast.LENGTH_SHORT).show()
-                    findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
+                    val storedUser = repository.getUserByEmail(email)
+                    if (storedUser != null) {
+                        val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Activity.MODE_PRIVATE)
+                        with(sharedPref.edit()) {
+                            putInt("loggedInUserId", storedUser.id)
+                            putString("loggedInUsername", storedUser.username)
+                            putBoolean("isLoggedIn", true)
+                            apply()
+                        }
+
+                        Toast.makeText(requireContext(), "Registration Successful!", Toast.LENGTH_SHORT).show()
+                        findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
+                    } else {
+                        Toast.makeText(requireContext(), "Error: Could not retrieve user after registration", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
     }
+
 
 
 

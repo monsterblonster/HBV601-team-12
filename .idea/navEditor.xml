@@ -9,6 +9,9 @@
               <option name="myPositions">
                 <map>
                   <entry key="createEventFragment">
+                  <entry key="action_createEventFragment_to_eventFragment">
+                  <entry key="action_groupFragment_to_editGroupFragment">
+                  <entry key="GroupFragment">
                     <value>
                       <LayoutPositions>
                         <option name="myPosition">
@@ -19,7 +22,6 @@
                         </option>
                         <option name="myPositions">
                           <map>
-                            <entry key="action_createEventFragment_to_eventFragment">
                               <value>
                                 <LayoutPositions />
                               </value>
@@ -35,6 +37,27 @@
                         <option name="myPosition">
                           <Point>
                             <option name="x" value="256" />
+                            <option name="y" value="12" />
+                          </Point>
+                        </option>
+                        <option name="myPositions">
+                          <map>
+                            <entry key="action_createGroupFragment_to_profileFragment">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                          </map>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
+                  <entry key="editGroupFragment">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="12" />
                             <option name="y" value="12" />
                           </Point>
                         </option>
@@ -165,6 +188,11 @@
                               </value>
                             </entry>
                             <entry key="action_profileFragment_to_editProfileFragment">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                            <entry key="action_profileFragment_to_groupFragment">
                               <value>
                                 <LayoutPositions />
                               </value>

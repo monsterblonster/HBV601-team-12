@@ -5,17 +5,18 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
-import androidx.activity.addCallback
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.entities.User
+import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository
 import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository
 import `is`.hi.hbv601_team_12.databinding.FragmentProfileBinding
 import kotlinx.coroutines.Dispatchers
@@ -26,8 +27,10 @@ import java.io.File
 class ProfileFragment : Fragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
-    private lateinit var repository: OfflineUsersRepository
+    private lateinit var usersRepository: OfflineUsersRepository
+    private lateinit var groupsRepository: OfflineGroupsRepository
     private var currentUser: User? = null
+    private lateinit var groupsAdapter: GroupsAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,10 +44,12 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val db = AppDatabase.getDatabase(requireContext())
-        repository = OfflineUsersRepository(db.userDao())
+        usersRepository = OfflineUsersRepository(db.userDao())
+        groupsRepository = OfflineGroupsRepository(db.groupDao())
+
+        binding.groupsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         loadUserProfile()
-
         setupMenu()
     }
 
@@ -78,20 +83,32 @@ class ProfileFragment : Fragment() {
     private fun loadUserProfile() {
         lifecycleScope.launch(Dispatchers.IO) {
             val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Activity.MODE_PRIVATE)
-            val username = sharedPref.getString("loggedInUsername", null)
+            val userId = sharedPref.getInt("loggedInUserId", -1)
 
-            if (username != null) {
-                val user = repository.getUserByUsername(username)
+            if (userId == -1) {
                 withContext(Dispatchers.Main) {
-                    if (user != null) {
-                        currentUser = user
-                        binding.tvFullName.text = user.fullName
-                        binding.tvUsername.text = getString(R.string.username_format, user.username)
-                        binding.tvEmail.text = user.email
-                        binding.tvPhoneNumber.text = user.phoneNumber
-                        binding.tvAddress.text = user.address
+                    if (isAdded && _binding != null) {
+                        Toast.makeText(requireContext(), "No logged-in user found!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                return@launch
+            }
 
-                        user.profilePicture?.let {
+            val userFlow = usersRepository.getUserStream(userId)
+
+            withContext(Dispatchers.Main) {
+                userFlow.collect { profile ->
+                    if (!isAdded || _binding == null) return@collect
+
+                    if (profile != null) {
+                        currentUser = profile
+                        binding.tvFullName.text = profile.fullName
+                        binding.tvUsername.text = getString(R.string.username_format, profile.username)
+                        binding.tvEmail.text = profile.email
+                        binding.tvPhoneNumber.text = profile.phoneNumber
+                        binding.tvAddress.text = profile.address
+
+                        profile.profilePicture?.let {
                             val file = File(it)
                             if (file.exists()) {
                                 binding.ivProfilePicture.load(file)
@@ -99,17 +116,56 @@ class ProfileFragment : Fragment() {
                                 binding.ivProfilePicture.setImageResource(R.drawable.default_profile)
                             }
                         }
+
+                        loadUserGroups(userId)
                     } else {
                         Toast.makeText(requireContext(), "User not found!", Toast.LENGTH_SHORT).show()
                     }
                 }
-            } else {
+            }
+        }
+    }
+
+    private fun loadUserGroups(userId: Int) {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val userGroupsFlow = groupsRepository.getAllGroupsStream()
+
+                userGroupsFlow.collect { groups ->
+                    withContext(Dispatchers.Main) {
+                        if (!isAdded || _binding == null) return@withContext
+
+                        if (groups.isEmpty()) {
+                            binding.noGroupsTextView.visibility = View.VISIBLE
+                            binding.groupsRecyclerView.visibility = View.GONE
+                        } else {
+                            binding.noGroupsTextView.visibility = View.GONE
+                            binding.groupsRecyclerView.visibility = View.VISIBLE
+                            groupsAdapter = GroupsAdapter(groups, userId) { groupId ->
+                                onGroupClicked(groupId)
+                            }
+                            binding.groupsRecyclerView.adapter = groupsAdapter
+                        }
+                    }
+                }
+            } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "No logged-in user found!", Toast.LENGTH_SHORT).show()
+                    if (!isAdded || _binding == null) return@withContext
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
     }
+
+    private fun onGroupClicked(groupId: String) {
+        val bundle = Bundle().apply {
+            putString("groupId", groupId)
+        }
+        findNavController().navigate(R.id.action_profileFragment_to_groupFragment, bundle)
+    }
+
+
+
 
     private fun showLogoutConfirmation() {
         AlertDialog.Builder(requireContext())

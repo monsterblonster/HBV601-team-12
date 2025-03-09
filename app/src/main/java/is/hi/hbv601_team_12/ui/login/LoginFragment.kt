@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.databinding.FragmentLoginBinding
 import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository
@@ -41,30 +42,33 @@ class LoginFragment : Fragment() {
         }
 
         binding.tvRegister.setOnClickListener {
-            findNavController().navigate(`is`.hi.hbv601_team_12.R.id.action_loginFragment_to_registerFragment)
+            findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
     }
 
     private fun handleLogin(username: String, password: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             val user = repository.loginUser(username, password)
+
             withContext(Dispatchers.Main) {
                 if (user != null) {
                     val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Activity.MODE_PRIVATE)
                     with(sharedPref.edit()) {
+                        putInt("loggedInUserId", user.id)
                         putString("loggedInUsername", user.username)
                         putBoolean("isLoggedIn", true)
                         apply()
                     }
 
                     Toast.makeText(requireContext(), "Login Successful!", Toast.LENGTH_SHORT).show()
-                    findNavController().navigate(`is`.hi.hbv601_team_12.R.id.action_loginFragment_to_profileFragment)
+                    findNavController().navigate(R.id.action_loginFragment_to_profileFragment)
                 } else {
-                    Toast.makeText(requireContext(), "Invalid email or password", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Invalid username or password", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

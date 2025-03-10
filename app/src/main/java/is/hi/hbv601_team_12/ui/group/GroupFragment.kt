@@ -15,6 +15,7 @@ import coil.load
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.entities.Group
 import `is`.hi.hbv601_team_12.data.entities.Event
+import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineEventsRepository
 import `is`.hi.hbv601_team_12.data.repositories.GroupsRepository
 import `is`.hi.hbv601_team_12.data.repositories.UsersRepository
 import `is`.hi.hbv601_team_12.databinding.FragmentGroupBinding
@@ -29,6 +30,7 @@ class GroupFragment : Fragment() {
     private var groupId: Int? = null
     private lateinit var groupsRepository: GroupsRepository
     private lateinit var usersRepository: UsersRepository
+    private lateinit var eventRepository: OfflineEventsRepository
     private var isAdmin: Boolean = false
     private lateinit var currentGroup: Group
     private lateinit var eventAdapter: EventAdapter
@@ -53,6 +55,7 @@ class GroupFragment : Fragment() {
         val db = `is`.hi.hbv601_team_12.data.AppDatabase.getDatabase(requireContext())
         groupsRepository = `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository(db.groupDao())
         usersRepository = `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository(db.userDao())
+        eventRepository = `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineEventsRepository(db.eventDao())
 
         eventAdapter = EventAdapter()
         binding.eventsRecyclerView.adapter = eventAdapter
@@ -86,9 +89,9 @@ class GroupFragment : Fragment() {
 
     private fun fetchEventsForGroup(groupId: Int) {
        lifecycleScope.launch(Dispatchers.IO) {
-          val events = groupsRepository.getEventsForGroup(groupId)
+          val events = eventRepository.getEventsForGroupStream(groupId)
           withContext(Dispatchers.Main) {
-            eventAdapter.submitList(events)
+            eventAdapter.submitList(events) // TODO list event yfir i flow
         }
     }
   }

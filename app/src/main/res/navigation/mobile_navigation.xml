@@ -39,6 +39,9 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/profileFragment"
             app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_profileFragment_to_groupFragment"
+            app:destination="@id/GroupFragment"/>
     </fragment>
 
     <fragment
@@ -74,7 +77,59 @@
         android:id="@+id/createGroupFragment"
         android:name="is.hi.hbv601_team_12.ui.profile.CreateGroupFragment"
         android:label="Create Group"
-        tools:layout="@layout/fragment_create_group"/>
+        tools:layout="@layout/fragment_create_group">
 
+        <action
+            android:id="@+id/action_createGroupFragment_to_profileFragment"
+            app:destination="@id/profileFragment"/>
+    </fragment>
 
+    <fragment
+        android:id="@+id/editGroupFragment"
+        android:name="is.hi.hbv601_team_12.ui.group.EditGroupFragment"
+        android:label="Edit Group"
+        tools:layout="@layout/fragment_edit_group"/>
+
+    <fragment
+    android:id="@+id/createEventFragment"
+    android:name="is.hi.hbv601_team_12.ui.event.CreateEventFragment"
+    tools:layout="@layout/fragment_create_event">
+    <argument
+        android:name="groupId"
+        app:argType="integer" />
+  </fragment>
+
+    <fragment
+        android:id="@+id/eventFragment"
+        android:name="is.hi.hbv601_team_12.ui.event.EventFragment"
+        tools:layout="@layout/fragment_event">
+        <argument
+            android:name="eventId"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_eventFragment_to_editEventFragment"
+            app:destination="@id/editEventFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/editEventFragment"
+        android:name="is.hi.hbv601_team_12.ui.event.EditEventFragment"
+        tools:layout="@layout/fragment_create_event">
+        <argument
+            android:name="eventId"
+            app:argType="integer" />
+    </fragment>
+  <fragment
+        android:id="@+id/GroupFragment"
+        android:name="is.hi.hbv601_team_12.ui.group.GroupFragment"
+        android:label="Group"
+        tools:layout="@layout/fragment_group">
+        <argument
+            android:name="groupId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_groupFragment_to_editGroupFragment"
+            app:destination="@id/editGroupFragment"/>
+
+    </fragment>
 </navigation>

@@ -21,6 +21,8 @@ class OfflineUsersRepository(private val userDao: UserDao) : UsersRepository {
 
     override suspend fun getUserByUsername(username: String): User? = userDao.getUserByUsername(username)
 
+    override suspend fun getUserById(id: Int): User? = userDao.getUserById(id)
+
     override suspend fun loginUser(username: String, password: String): User? = userDao.login(username, password)
 }
 

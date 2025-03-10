@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "is.hi.hbv601_team_12"
-        minSdk = 24
+        minSdk = 26 // breytt fyrir localdate time
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"

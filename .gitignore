@@ -23,3 +23,5 @@ flake.nix
 gradlew.bat
 gradlew
 gradlew.properties
+kls_database.db
+.idea/

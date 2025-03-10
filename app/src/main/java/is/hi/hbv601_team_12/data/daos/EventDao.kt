@@ -1,29 +1,64 @@
 package `is`.hi.hbv601_team_12.data.daos
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 import `is`.hi.hbv601_team_12.data.entities.Event
+import `is`.hi.hbv601_team_12.data.entities.EventParticipant
+import `is`.hi.hbv601_team_12.data.entities.User
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EventDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE) // Breyta í REPLACE?
-    suspend fun insert(event: Event)
-
+    @Insert
+    suspend fun insertEvent(event: Event): Long
+    
     @Update
-    suspend fun update(event: Event)
-
+    suspend fun updateEvent(event: Event)
+    
     @Delete
-    suspend fun delete(event: Event)
-
-    @Query("SELECT * from events WHERE id = :id")
-    fun getEvent(id: Int): Flow<Event>
-
-    @Query("SELECT * from events ORDER BY id ASC")
+    suspend fun deleteEvent(event: Event)
+    
+    @Query("SELECT * FROM events WHERE id = :eventId")
+    fun getEventById(eventId: Int): Flow<Event>
+    
+    @Query("SELECT * FROM events ORDER BY startDateTime")
     fun getAllEvents(): Flow<List<Event>>
-    // Þarf líklega fleiri query-ur
+    
+    @Query("SELECT * FROM events WHERE creatorId = :userId ORDER BY startDateTime")
+    fun getEventsByCreator(userId: Int): Flow<List<Event>>
+    
+    @Insert
+    suspend fun addParticipant(eventParticipant: EventParticipant)
+
+    @Insert
+    suspend fun addParticipants(participants: List<EventParticipant>)
+    
+    @Delete
+    suspend fun removeParticipant(eventParticipant: EventParticipant)
+    
+    @Query("DELETE FROM event_participants WHERE eventId = :eventId AND userId = :userId")
+    suspend fun removeParticipantByIds(eventId: Int, userId: Int)
+    
+    @Query("SELECT * FROM event_participants WHERE eventId = :eventId")
+    suspend fun getParticipantsForEvent(eventId: Int): List<EventParticipant>
+    
+    @Query("""
+        SELECT u.* FROM users u
+        INNER JOIN event_participants ep ON u.id = ep.userId
+        WHERE ep.eventId = :eventId
+    """)
+    suspend fun getUsersForEvent(eventId: Int): List<User>
+
+    @Query("""
+        SELECT e.* FROM events e
+        INNER JOIN event_participants ep ON e.id = ep.eventId
+        WHERE ep.userId = :userId
+        ORDER BY e.startDateTime
+    """)
+    fun getEventsForUser(userId: Int): Flow<List<Event>>
+    
+    @Query("SELECT EXISTS(SELECT 1 FROM event_participants WHERE eventId = :eventId AND userId = :userId)")
+    suspend fun isUserParticipating(eventId: Int, userId: Int): Boolean
+
+    @Query("SELECT * FROM events WHERE groupId = :groupId")
+    fun getEventsByGroupIdStream(groupId: Int): Flow<List<Event>>
 }

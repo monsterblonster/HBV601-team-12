@@ -13,6 +13,7 @@ import androidx.navigation.fragment.findNavController
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.entities.Event
 import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineEventsRepository
+import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -22,7 +23,7 @@ class EditEventFragment : Fragment() {
 
     private lateinit var eventsRepository: OfflineEventsRepository
     private var event: Event? = null
-    // TODO vantar group tengingu
+    private lateinit var groupsRepository: OfflineGroupsRepository
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,6 +34,7 @@ class EditEventFragment : Fragment() {
         val db = `is`.hi.hbv601_team_12.data.AppDatabase.getDatabase(requireContext())
         eventsRepository = OfflineEventsRepository(db.eventDao())
 
+
         val eventId = arguments?.getInt("eventId") ?: 0
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -40,6 +42,7 @@ class EditEventFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 view.findViewById<EditText>(R.id.eventNameEditText).setText(event?.name)
                 view.findViewById<EditText>(R.id.eventDescriptionEditText).setText(event?.description)
+                // TODO vantar meira event info
             }
         }
 

@@ -1,6 +1,7 @@
 package `is`.hi.hbv601_team_12.ui.group
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -19,6 +20,7 @@ import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineEventsRepository
 import `is`.hi.hbv601_team_12.data.repositories.GroupsRepository
 import `is`.hi.hbv601_team_12.data.repositories.UsersRepository
 import `is`.hi.hbv601_team_12.databinding.FragmentGroupBinding
+import `is`.hi.hbv601_team_12.ui.events.EventsAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,9 +33,9 @@ class GroupFragment : Fragment() {
     private lateinit var groupsRepository: GroupsRepository
     private lateinit var usersRepository: UsersRepository
     private lateinit var eventRepository: OfflineEventsRepository
+    private lateinit var eventsAdapter: EventsAdapter
     private var isAdmin: Boolean = false
     private lateinit var currentGroup: Group
-    private lateinit var eventAdapter: EventAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,15 +59,14 @@ class GroupFragment : Fragment() {
         usersRepository = `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository(db.userDao())
         eventRepository = `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineEventsRepository(db.eventDao())
 
-        eventAdapter = EventAdapter()
-        binding.eventsRecyclerView.adapter = eventAdapter
         binding.eventsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+
 
         groupId = arguments?.getString("groupId")?.toIntOrNull()
 
         if (groupId != null) {
             fetchGroupDetails(groupId!!)
-            fetchEventsForGroup(groupId!!)
+            loadEvents(groupId!!)
         } else {
             Toast.makeText(requireContext(), "Invalid Group ID!", Toast.LENGTH_SHORT).show()
         }
@@ -87,14 +88,44 @@ class GroupFragment : Fragment() {
         }
     }
 
-    private fun fetchEventsForGroup(groupId: Int) {
-       lifecycleScope.launch(Dispatchers.IO) {
-          val events = eventRepository.getEventsForGroupStream(groupId)
-          withContext(Dispatchers.Main) {
-            eventAdapter.submitList(events) // TODO list event yfir i flow
+    private fun loadEvents(groupId: Int) {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val eventsFlow = eventRepository.getEventsForGroupStream(groupId)
+
+                eventsFlow.collect { events ->
+                    val participantCounts = mutableMapOf<Int, Int>()
+                    events.forEach { event ->
+                        val count = eventRepository.getParticipantsForEvent(event.id).size
+                        participantCounts[event.id] = count
+                    }
+                    withContext(Dispatchers.Main) {
+                if (!isAdded || _binding == null) return@withContext
+
+                if (events.isEmpty()) {
+                    binding.noEventsTextView.visibility = View.VISIBLE
+                    binding.eventsRecyclerView.visibility = View.GONE
+                } else {
+                    binding.noEventsTextView.visibility = View.GONE
+                    binding.eventsRecyclerView.visibility = View.VISIBLE
+
+                    eventsAdapter = EventsAdapter(events, participantCounts) { eventId ->
+                        onEventClicked(eventId)
+                    }
+                    binding.eventsRecyclerView.adapter = eventsAdapter
+                    eventsAdapter.notifyDataSetChanged() // ui update
+                }
+            }
+
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    if (!isAdded || _binding == null) return@withContext
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
-  }
     private fun checkAdminPrivileges(adminId: Int) {
         val currentUserID = getCurrentUserID()
         isAdmin = (currentUserID == adminId)
@@ -256,6 +287,12 @@ class GroupFragment : Fragment() {
     }
     findNavController().navigate(R.id.createEventFragment, bundle)
   }
+    private fun onEventClicked(eventId: Int) {
+        val bundle = Bundle().apply {
+            putInt("eventId", eventId)
+        }
+        findNavController().navigate(R.id.eventFragment, bundle)
+    }
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

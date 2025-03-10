@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- Group Image -->
     <ImageView
         android:id="@+id/groupImageView"
         android:layout_width="120dp"
@@ -16,6 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Group Name -->
     <TextView
         android:id="@+id/groupNameTextView"
         android:layout_width="wrap_content"
@@ -28,6 +30,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/groupImageView" />
 
+    <!-- Group Description -->
     <TextView
         android:id="@+id/groupDescriptionTextView"
         android:layout_width="0dp"
@@ -39,6 +42,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/groupNameTextView" />
 
+    <!-- Group Tags -->
     <TextView
         android:id="@+id/groupTagsTextView"
         android:layout_width="wrap_content"
@@ -51,6 +55,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/groupDescriptionTextView" />
 
+    <!-- Members Header -->
     <TextView
         android:id="@+id/membersHeaderTextView"
         android:layout_width="wrap_content"
@@ -62,16 +67,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/groupTagsTextView" />
 
+    <!-- Members RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/membersRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/eventsHeaderTextView" 
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/membersHeaderTextView" />
+        app:layout_constraintTop_toBottomOf="@id/membersHeaderTextView"
+        app:layout_constraintHeight_default="percent" 
+        app:layout_constraintHeight_percent="0.5" 
+        tools:listitem="@layout/item_member" />
 
+    <!-- Events Header -->
     <TextView
         android:id="@+id/eventsHeaderTextView"
         android:layout_width="wrap_content"
@@ -83,17 +93,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/membersRecyclerView" />
 
+    <!-- Events RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/eventsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" 
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventsHeaderTextView"
+        app:layout_constraintHeight_default="percent" 
+        app:layout_constraintHeight_percent="0.5" 
         tools:listitem="@layout/item_event" />
 
+    <!-- No Events TextView -->
     <TextView
         android:id="@+id/noEventsTextView"
         android:layout_width="wrap_content"
@@ -104,6 +118,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Create Event FloatingActionButton -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabCreateEvent"
         android:layout_width="wrap_content"

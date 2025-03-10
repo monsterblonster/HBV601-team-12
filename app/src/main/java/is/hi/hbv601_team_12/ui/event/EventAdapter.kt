@@ -1,46 +1,60 @@
-package `is`.hi.hbv601_team_12.ui.group
+package `is`.hi.hbv601_team_12.ui.events
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.entities.Event
-import `is`.hi.hbv601_team_12.databinding.ItemEventBinding
 import java.time.format.DateTimeFormatter
 
-class EventAdapter : ListAdapter<Event, EventAdapter.EventViewHolder>(EventDiffCallback()) {
+class EventsAdapter(
+    private val events: List<Event>,
+    private val participantCounts: Map<Int, Int>, // eventId to participant count
+    private val onEventClick: (Int) -> Unit
+) : RecyclerView.Adapter<EventsAdapter.EventViewHolder>() {
+
+    private val dateTimeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a")
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
-        val binding = ItemEventBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return EventViewHolder(binding)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_event, parent, false)
+        return EventViewHolder(view, onEventClick)
     }
 
     override fun onBindViewHolder(holder: EventViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val event = events[position]
+        val participantCount = participantCounts[event.id] ?: 0
+        holder.bind(event, participantCount, dateTimeFormatter)
     }
 
-    class EventViewHolder(private val binding: ItemEventBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(event: Event) {
-            binding.eventNameTextView.text = event.name
-            binding.eventTimeTextView.text = event.startDateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
-            binding.eventDurationTextView.text = "${event.durationMinutes} minutes"
-            binding.eventMembersGoingTextView.text = "5 members going" // TODO Placeholder
-        }
-    }
+    override fun getItemCount() = events.size
 
-    private class EventDiffCallback : DiffUtil.ItemCallback<Event>() {
-        override fun areItemsTheSame(oldItem: Event, newItem: Event): Boolean {
-            return oldItem.id == newItem.id
-        }
+    class EventViewHolder(itemView: View, private val onEventClick: (Int) -> Unit) :
+        RecyclerView.ViewHolder(itemView) {
+        private val eventNameTextView: TextView = itemView.findViewById(R.id.eventNameTextView)
+        private val eventDescriptionTextView: TextView = itemView.findViewById(R.id.eventDescriptionTextView)
+        private val eventDateTimeTextView: TextView = itemView.findViewById(R.id.eventDateTimeTextView)
+        private val eventParticipantsTextView: TextView = itemView.findViewById(R.id.eventParticipantsTextView)
 
-        override fun areContentsTheSame(oldItem: Event, newItem: Event): Boolean {
-            return oldItem == newItem
+        fun bind(event: Event, participantCount: Int, formatter: DateTimeFormatter) {
+            eventNameTextView.text = event.name
+            
+            if (!event.description.isNullOrEmpty()) {
+                eventDescriptionTextView.text = event.description
+                eventDescriptionTextView.visibility = View.VISIBLE
+            } else {
+                eventDescriptionTextView.visibility = View.GONE
+            }
+            
+            eventDateTimeTextView.text = event.startDateTime.format(formatter)
+            
+            eventParticipantsTextView.text = "$participantCount going"
+
+            itemView.setOnClickListener {
+                onEventClick(event.id)
+            }
         }
     }
 }

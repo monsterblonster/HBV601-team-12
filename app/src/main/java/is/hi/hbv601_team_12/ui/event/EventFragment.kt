@@ -1,5 +1,6 @@
 package `is`.hi.hbv601_team_12.ui.event
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -108,9 +109,34 @@ class EventFragment : Fragment() {
                         findNavController().navigate(R.id.action_eventFragment_to_editEventFragment, bundle)
                         true
                     }
+
+                    R.id.action_delete_event -> {
+                        showDeleteConfirmationDialog()
+                        true
+                    }
                     else -> false
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun showDeleteConfirmationDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Event")
+            .setMessage("Are you sure you want to delete this event? This action cannot be undone.")
+            .setPositiveButton("Delete") { _, _ -> deleteEvent() }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun deleteEvent() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            eventsRepository.deleteEvent(eventsRepository.getEventById(eventId!!)!!)
+            withContext(Dispatchers.Main) {
+                Toast.makeText(requireContext(), "Event deleted successfully", Toast.LENGTH_SHORT)
+                    .show()
+                findNavController().navigateUp()
+            }
+        }
     }
 }

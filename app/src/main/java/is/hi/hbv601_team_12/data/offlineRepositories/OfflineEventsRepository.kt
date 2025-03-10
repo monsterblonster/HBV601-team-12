@@ -66,6 +66,9 @@ class OfflineEventsRepository(private val eventDao: EventDao) : EventsRepository
     fun getEventsByCreator(userId: Int): Flow<List<Event>> {
         return eventDao.getEventsByCreator(userId)
     }
+    fun getEventsForGroupStream(groupId: Int): Flow<List<Event>> {
+      return eventDao.getEventsByGroupIdStream(groupId)
+    }
 
     suspend fun addParticipant(eventId: Int, userId: Int, status: ParticipantStatus = ParticipantStatus.INVITED) {
         val participant = EventParticipant(
@@ -103,3 +106,4 @@ class OfflineEventsRepository(private val eventDao: EventDao) : EventsRepository
         return eventDao.isUserParticipating(eventId, userId)
     }
 }
+

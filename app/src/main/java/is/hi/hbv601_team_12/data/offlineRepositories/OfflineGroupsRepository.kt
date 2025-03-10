@@ -45,9 +45,4 @@ class OfflineGroupsRepository(private val groupDao: GroupDao) : GroupsRepository
             groupDao.update(updatedGroup)
         }
     }
-    override suspend fun getEventsForGroup(groupId: Int): List<Event> {
-        return groupDao.getEventsForGroup(groupId) 
-    }
-
-
 }

@@ -36,9 +36,6 @@ interface GroupDao {
 
     @Query("SELECT * FROM groups WHERE id = :groupId")
     suspend fun getGroupById(groupId: Int): Group?
-
-    @Query("SELECT * FROM events WHERE groupId = :groupId")
-    suspend fun getEventsForGroup(groupId: Int): List<Event>
 }
 
 

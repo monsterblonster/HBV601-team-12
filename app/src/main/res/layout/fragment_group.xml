@@ -72,7 +72,7 @@
         app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toBottomOf="@id/membersHeaderTextView" />
 
-        <TextView
+    <TextView
         android:id="@+id/eventsHeaderTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -91,7 +91,18 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/eventsHeaderTextView" />
+        app:layout_constraintTop_toBottomOf="@id/eventsHeaderTextView"
+        tools:listitem="@layout/item_event" />
+
+    <TextView
+        android:id="@+id/noEventsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No events found."
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/eventsHeaderTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabCreateEvent"
@@ -105,4 +116,5 @@
         app:tint="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

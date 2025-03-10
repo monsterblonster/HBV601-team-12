@@ -58,4 +58,7 @@ interface EventDao {
     
     @Query("SELECT EXISTS(SELECT 1 FROM event_participants WHERE eventId = :eventId AND userId = :userId)")
     suspend fun isUserParticipating(eventId: Int, userId: Int): Boolean
+
+    @Query("SELECT * FROM events WHERE groupId = :groupId")
+    fun getEventsByGroupIdStream(groupId: Int): Flow<List<Event>>
 }

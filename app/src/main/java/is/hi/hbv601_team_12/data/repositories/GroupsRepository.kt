@@ -19,5 +19,4 @@ interface GroupsRepository {
 
     suspend fun updateGroupMembers(groupId: Int, newMembers: List<Int>)
 
-    suspend fun getEventsForGroup(groupId: Int): List<Event>
 }

@@ -15,5 +15,11 @@
     <item
         android:id="@+id/action_leave_group"
         android:title="@string/leave_group"
-        app:showAsAction="never"/>
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_invite_user"
+        android:title="@string/invite_user"
+        app:showAsAction="never" />
+
 </menu>

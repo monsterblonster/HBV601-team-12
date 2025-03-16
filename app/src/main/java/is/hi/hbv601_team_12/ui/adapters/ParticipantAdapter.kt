@@ -1,4 +1,4 @@
-package `is`.hi.hbv601_team_12.ui.event
+package `is`.hi.hbv601_team_12.ui.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -7,12 +7,13 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import `is`.hi.hbv601_team_12.R
-import `is`.hi.hbv601_team_12.data.entities.ParticipantStatus
-import `is`.hi.hbv601_team_12.data.entities.User
+import `is`.hi.hbv601_team_12.data.entities.*
 import `is`.hi.hbv601_team_12.databinding.ItemParticipantBinding
 import java.io.File
 
-class ParticipantAdapter : ListAdapter<ParticipantWithStatus, ParticipantAdapter.ParticipantViewHolder>(ParticipantDiffCallback()) {
+class ParticipantAdapter : ListAdapter<ParticipantWithStatus, ParticipantAdapter.ParticipantViewHolder>(
+    ParticipantDiffCallback()
+) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ParticipantViewHolder {
         val binding = ItemParticipantBinding.inflate(
@@ -42,12 +43,11 @@ class ParticipantAdapter : ListAdapter<ParticipantWithStatus, ParticipantAdapter
                 ParticipantStatus.DECLINED -> "Declined"
             }
 
-            user.profilePicture?.let {
-                val file = File(it)
-                if (file.exists()) {
-                    binding.ivParticipantPicture.load(file)
-                } else {
-                    binding.ivParticipantPicture.setImageResource(R.drawable.default_profile)
+            user.profilePicturePath?.let {
+                binding.ivParticipantPicture.load(it) {
+                    crossfade(true)
+                    placeholder(R.drawable.default_profile)
+                    error(R.drawable.default_profile)
                 }
             } ?: binding.ivParticipantPicture.setImageResource(R.drawable.default_profile)
         }

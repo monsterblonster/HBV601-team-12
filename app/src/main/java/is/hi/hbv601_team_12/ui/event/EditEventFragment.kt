@@ -1,5 +1,6 @@
 package `is`.hi.hbv601_team_12.ui.event
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,46 +13,59 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.entities.Event
-import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineEventsRepository
-import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository
+import `is`.hi.hbv601_team_12.data.onlineRepositories.OnlineEventsRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
+
 class EditEventFragment : Fragment() {
 
-    private lateinit var eventsRepository: OfflineEventsRepository
+    private lateinit var eventsRepository: OnlineEventsRepository
     private var event: Event? = null
-    private lateinit var groupsRepository: OfflineGroupsRepository
+    private var eventId: Long = -1
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_create_event, container, false)
+        val view = inflater.inflate(R.layout.fragment_edit_event, container, false)
 
-        val db = `is`.hi.hbv601_team_12.data.AppDatabase.getDatabase(requireContext())
-        eventsRepository = OfflineEventsRepository(db.eventDao())
+        eventsRepository = OnlineEventsRepository()
+        eventId = arguments?.getLong("eventId") ?: -1L
 
-
-        val eventId = arguments?.getInt("eventId") ?: 0
+        if (eventId == -1L) {
+            Toast.makeText(requireContext(), "Invalid event ID", Toast.LENGTH_SHORT).show()
+            findNavController().navigateUp()
+            return view
+        }
 
         lifecycleScope.launch(Dispatchers.IO) {
-            event = eventsRepository.getEventStream(eventId).first()
+            val response = eventsRepository.getEvent(eventId)
             withContext(Dispatchers.Main) {
-                view.findViewById<EditText>(R.id.eventNameEditText).setText(event?.name)
-                view.findViewById<EditText>(R.id.eventDescriptionEditText).setText(event?.description)
-                // TODO vantar meira event info
+                if (response.isSuccessful) {
+                    event = response.body()
+                    view.findViewById<EditText>(R.id.eventNameEditText).setText(event?.name)
+                    view.findViewById<EditText>(R.id.eventDescriptionEditText).setText(event?.description)
+                    // TODO: date time stuff
+                } else {
+                    Toast.makeText(requireContext(), "Failed to load event details", Toast.LENGTH_SHORT).show()
+                    findNavController().navigateUp()
+                }
             }
         }
 
         view.findViewById<Button>(R.id.saveEventButton).setOnClickListener {
             val eventName = view.findViewById<EditText>(R.id.eventNameEditText).text.toString()
             val eventDescription = view.findViewById<EditText>(R.id.eventDescriptionEditText).text.toString()
-            val startDateTime = LocalDateTime.now() // Placeholder
-            val durationMinutes = 120 // Placeholder
-            val location = "Some Location" // Placeholder
+            val startDateTime = LocalDateTime.now() // placeholder
+            val durationMinutes = 120 // placeholder
+            val location = "Some Location" // placeholder
+
+            if (eventName.isBlank()) {
+                Toast.makeText(requireContext(), "Event name cannot be empty!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
             event?.let {
                 it.name = eventName
@@ -61,10 +75,14 @@ class EditEventFragment : Fragment() {
                 it.location = location
 
                 lifecycleScope.launch(Dispatchers.IO) {
-                    eventsRepository.updateEvent(it)
+                    val response = eventsRepository.editEvent(eventId, getCurrentUserId().toLong(), it)
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "Event updated successfully!", Toast.LENGTH_SHORT).show()
-                        findNavController().navigateUp()
+                        if (response.isSuccessful) {
+                            Toast.makeText(requireContext(), "Event updated successfully!", Toast.LENGTH_SHORT).show()
+                            findNavController().navigateUp()
+                        } else {
+                            Toast.makeText(requireContext(), "Failed to update event: ${response.message()}", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }
@@ -72,4 +90,10 @@ class EditEventFragment : Fragment() {
 
         return view
     }
+
+    private fun getCurrentUserId(): Long {
+        val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Context.MODE_PRIVATE)
+        return sharedPref.getLong("loggedInUserId", -1L)
+    }
+
 }

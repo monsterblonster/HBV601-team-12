@@ -1,17 +1,21 @@
 package `is`.hi.hbv601_team_12.data.entities
 
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "users")
 data class User(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    var username: String,
-    var email: String,
-    var password: String,
+    @PrimaryKey(autoGenerate = false)
+    val id: Long = 0,
+    var userName: String,
+    var emailAddress: String,
+    var userPW: String,
     var fullName: String,
     var phoneNumber: String?,
     var address: String?,
-    var profilePicture: String?
-)
+    var profilePicturePath: String?,
+){
+    @Ignore
+    var confirmPassword: String? = null
+}

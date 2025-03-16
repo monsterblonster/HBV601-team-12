@@ -11,6 +11,7 @@
     <string name="username">Username</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
     <string name="address">Address</string>
     <string name="phone_number">Phone Number</string>
     <string name="register">Register</string>
@@ -26,6 +27,8 @@
     <string name="take_picture">Take Picture</string>
     <string name="create_group">Create Group</string>
     <string name="no_groups_message">You are not a member of any groups.</string>
+    <string name="invite_info">Invite ID: %1$d / Group: %2$d</string>
+
 
 
     <string name="menu_profile">Profile</string>
@@ -38,7 +41,7 @@
 
     <string name="group_name">Group Name</string>
     <string name="group_description">Description (optional)</string>
-    <string name="group_tags">Tags: %1$s</string>
+    <string name="group_tags">Tags: Tags</string>
     <string name="group_max_members">Max Members (optional)</string>
     <string name="is_admin">(Admin)</string>
     <string name="group_picture_desc">Group Picture</string>
@@ -50,8 +53,30 @@
     <string name="leave_group">Leave Group</string>
     <string name="members">Members</string>
     <string name="change_group_picture">Change Group Picture</string>
+    <string name="your_invites">Your Invites</string>
+    <string name="view_invites">View Invites</string>
+    <string name="no_events_found">No events found.</string>
+    <string name="create_event">Create Event</string>
+    <string name="events">Events</string>
+    <string name="invite_user">Invite User</string>
+    <string name="accept">Accept</string>
+    <string name="decline">Decline</string>
+    <string name="invitation_info">Invitation Info</string>
 
-
+    <string name="event_name_hint">Event Name</string>
+    <string name="event_description_hint">Event Description</string>
+    <string name="start_date_time">Start Date and Time</string>
+    <string name="end_date_time">End Date and Time</string>
+    <string name="select_start_date_time">Select Start Date and Time</string>
+    <string name="select_end_date_time">Select End Date and Time</string>
+    <string name="save_event">Save Event</string>
+    <string name="event_name_label">Event Name</string>
+    <string name="event_description_label">Event Description</string>
+    <string name="start_time_label">Start Time</string>
+    <string name="event_duration_label">Duration</string>
+    <string name="event_location_label">Location</string>
+    <string name="participants">Participants</string>
+    <string name="edit_event_title">Edit Event</string>
 
 
 </resources>

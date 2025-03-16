@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface InvitationDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE) // Breyta í REPLACE?
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(invitation: Invitation)
 
     @Update
@@ -20,10 +20,16 @@ interface InvitationDao {
     @Delete
     suspend fun delete(invitation: Invitation)
 
-    @Query("SELECT * from invitations WHERE id = :id")
-    fun getInvitation(id: Int): Flow<Invitation>
+    @Query("SELECT * FROM invitations WHERE localId = :localId")
+    fun getInvitationByLocalId(localId: Int): Flow<Invitation>
 
-    @Query("SELECT * from invitations ORDER BY id ASC")
+    @Query("SELECT * FROM invitations WHERE userId = :userId")
+    fun getInvitationsByUser(userId: Long): Flow<List<Invitation>>
+
+    @Query("SELECT * FROM invitations WHERE groupId = :groupId")
+    fun getInvitationsByGroup(groupId: Long): Flow<List<Invitation>>
+
+    @Query("SELECT * FROM invitations ORDER BY localId ASC")
     fun getAllInvitations(): Flow<List<Invitation>>
-    // Þarf líklega fleiri query-ur
+
 }

@@ -1,42 +1,54 @@
 package `is`.hi.hbv601_team_12.ui.group
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import coil.load
 import `is`.hi.hbv601_team_12.R
+import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.entities.Group
+import `is`.hi.hbv601_team_12.data.models.ImageUploadResponse
+import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository
+import `is`.hi.hbv601_team_12.data.onlineRepositories.OnlineGroupsRepository
+import `is`.hi.hbv601_team_12.data.defaultRepositories.DefaultGroupsRepository
 import `is`.hi.hbv601_team_12.data.repositories.GroupsRepository
 import `is`.hi.hbv601_team_12.databinding.FragmentEditGroupBinding
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Response
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
-import java.text.SimpleDateFormat
-import java.util.*
 
 class EditGroupFragment : Fragment() {
+
     private var _binding: FragmentEditGroupBinding? = null
     private val binding get() = _binding!!
-    private var groupId: Int? = null
+
     private lateinit var groupsRepository: GroupsRepository
-    private var groupPicturePath: String? = null
+
     private lateinit var currentGroup: Group
-    private var photoFile: File? = null
+    private var groupId: Long = -1L
+    private var groupPicturePath: String? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentEditGroupBinding.inflate(inflater, container, false)
@@ -46,171 +58,217 @@ class EditGroupFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        groupsRepository = `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository(
-            `is`.hi.hbv601_team_12.data.AppDatabase.getDatabase(requireContext()).groupDao()
-        )
+        val db = AppDatabase.getDatabase(requireContext())
+        val offlineGroupsRepo = OfflineGroupsRepository(db.groupDao())
+        val onlineGroupsRepo = OnlineGroupsRepository()
+        groupsRepository = DefaultGroupsRepository(offlineGroupsRepo, onlineGroupsRepo)
 
-        groupId = arguments?.getInt("groupId")
-
-        if (groupId != null) {
-            fetchGroupDetails(groupId!!)
-        } else {
+        groupId = arguments?.getLong("groupId", -1L) ?: -1L
+        if (groupId == -1L) {
             Toast.makeText(requireContext(), "Invalid Group ID!", Toast.LENGTH_SHORT).show()
+            return
         }
+
+        loadGroupDetails()
 
         binding.btnSaveGroup.setOnClickListener { updateGroup() }
         binding.btnChangeGroupPicture.setOnClickListener { showImageSourceDialog() }
     }
 
-    private fun fetchGroupDetails(groupId: Int) {
+    private fun loadGroupDetails() {
         lifecycleScope.launch(Dispatchers.IO) {
-            groupsRepository.getGroupStream(groupId).collect { group ->
+            try {
+                val response = groupsRepository.getGroupById(groupId)
                 withContext(Dispatchers.Main) {
-                    if (group != null) {
-                        currentGroup = group
-                        populateFields(group)
-
-                        val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Activity.MODE_PRIVATE)
-                        val loggedInUserId = sharedPref.getInt("loggedInUserId", -1)
-
-                        val isAdmin = loggedInUserId == group.adminId
-                        binding.etGroupTags.isEnabled = isAdmin
-
-                        if (!isAdmin) {
-                            binding.etGroupTags.hint = "Only admins can change tags"
+                    if (response.isSuccessful) {
+                        response.body()?.let { fetchedGroup ->
+                            groupsRepository.insertGroup(fetchedGroup)
+                            currentGroup = fetchedGroup
+                            populateFields(fetchedGroup)
                         }
                     } else {
-                        Toast.makeText(requireContext(), "Group not found!", Toast.LENGTH_SHORT).show()
+                        loadOfflineGroup()
                     }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    loadOfflineGroup()
                 }
             }
         }
     }
 
-
-    private fun populateFields(group: Group) {
-        binding.etGroupName.setText(group.name)
-        binding.etGroupDescription.setText(group.description ?: "")
-        binding.etGroupTags.setText(group.tags?.split(",")?.joinToString(", ") ?: "")
-
-
-        group.groupPicture?.let {
-            val file = File(it)
-            if (file.exists()) {
-                binding.ivGroupPicture.load(file)
-                groupPicturePath = it
-            } else {
-                binding.ivGroupPicture.setImageResource(R.drawable.default_group_image)
+    private fun loadOfflineGroup() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val group = groupsRepository.getGroupStream(groupId).first()
+            withContext(Dispatchers.Main) {
+                if (group != null) {
+                    currentGroup = group
+                    populateFields(group)
+                } else {
+                    Toast.makeText(requireContext(), "Group not found offline!", Toast.LENGTH_SHORT).show()
+                }
             }
-        } ?: binding.ivGroupPicture.setImageResource(R.drawable.default_group_image)
+        }
     }
 
+    private fun populateFields(group: Group) {
+        binding.etGroupName.setText(group.groupName)
+        binding.etGroupDescription.setText(group.description ?: "")
+        binding.etGroupTags.setText(group.tags.joinToString(", "))
+
+        if (!group.profilePicturePath.isNullOrEmpty()) {
+            if (group.profilePicturePath!!.startsWith("http")) {
+                binding.ivGroupPicture.load(group.profilePicturePath) {
+                    crossfade(true)
+                    placeholder(R.drawable.default_group_image)
+                    error(R.drawable.default_group_image)
+                }
+            } else {
+                val file = File(group.profilePicturePath!!)
+                if (file.exists()) {
+                    binding.ivGroupPicture.load(file)
+                } else {
+                    binding.ivGroupPicture.setImageResource(R.drawable.default_group_image)
+                }
+            }
+        } else {
+            binding.ivGroupPicture.setImageResource(R.drawable.default_group_image)
+        }
+    }
 
     private fun showImageSourceDialog() {
         val options = arrayOf("Take Photo", "Choose from Gallery")
-
-        AlertDialog.Builder(requireContext())
-            .setTitle("Select Image Source")
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle("Change Group Picture")
             .setItems(options) { _, which ->
                 when (which) {
-                    0 -> takePhoto()
-                    1 -> pickImageFromGallery()
+                    0 -> openCamera()
+                    1 -> openGallery()
                 }
             }
             .show()
     }
 
-    private val imagePickerLauncher =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            uri?.let { saveImageLocally(it) }
-        }
-
-    private fun pickImageFromGallery() {
-        imagePickerLauncher.launch("image/*")
+    private fun openCamera() {
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        cameraLauncher.launch(cameraIntent)
     }
 
-    private fun takePhoto() {
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        photoFile = createImageFile()
-
-        photoFile?.let {
-            val photoURI = FileProvider.getUriForFile(
-                requireContext(),
-                "is.hi.hbv601_team_12.fileprovider",
-                it
-            )
-
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-            takePictureLauncher.launch(intent)
-        }
+    private fun openGallery() {
+        val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        galleryLauncher.launch(galleryIntent)
     }
 
-    private val takePictureLauncher =
+    private val cameraLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                photoFile?.let {
-                    groupPicturePath = it.absolutePath
-                    binding.ivGroupPicture.load(it)
+                val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    result.data?.getParcelableExtra("data", Bitmap::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    result.data?.extras?.get("data") as? Bitmap
+                }
+                bitmap?.let {
+                    val savedPath = saveBitmapToInternalStorage(it)
+                    binding.ivGroupPicture.setImageBitmap(it)
+                    groupPicturePath = savedPath
                 }
             }
         }
 
-    private fun createImageFile(): File {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date()) // Fixed typo
-        val fileName = "group_${groupId}_$timeStamp.jpg"
-        return File(requireContext().filesDir, fileName)
-    }
-
-
-    private fun saveImageLocally(imageUri: Uri) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val inputStream: InputStream? = requireActivity().contentResolver.openInputStream(imageUri)
-            val file = File(requireContext().filesDir, "group_${groupId}.jpg")
-            val outputStream = FileOutputStream(file)
-
-            inputStream?.copyTo(outputStream)
-            inputStream?.close()
-            outputStream.close()
-
-            groupPicturePath = file.absolutePath
-
-            withContext(Dispatchers.Main) {
-                binding.ivGroupPicture.load(file)
+    private val galleryLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val imageUri = result.data?.data
+                imageUri?.let {
+                    val savedPath = saveImageToInternalStorage(it)
+                    binding.ivGroupPicture.setImageURI(it)
+                    groupPicturePath = savedPath
+                }
             }
         }
+
+    private fun saveBitmapToInternalStorage(bitmap: Bitmap): String {
+        val file = File(requireContext().filesDir, "group_picture_${System.currentTimeMillis()}.jpg")
+        FileOutputStream(file).use { output ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, output)
+        }
+        return file.absolutePath
+    }
+
+    private fun saveImageToInternalStorage(imageUri: Uri): String {
+        val file = File(requireContext().filesDir, "group_picture_${System.currentTimeMillis()}.jpg")
+        requireContext().contentResolver.openInputStream(imageUri)?.use { input ->
+            FileOutputStream(file).use { output ->
+                input.copyTo(output)
+            }
+        }
+        return file.absolutePath
     }
 
     private fun updateGroup() {
         val newName = binding.etGroupName.text.toString().trim()
         val newDescription = binding.etGroupDescription.text.toString().trim()
-        val newTags = binding.etGroupTags.text.toString().trim()
-            .split(",")
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-            .joinToString(",")
+        val newTags = binding.etGroupTags.text.toString().trim().split(",").map { it.trim() }
 
         if (newName.isEmpty()) {
             Toast.makeText(requireContext(), "Group name cannot be empty!", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val updatedGroup = currentGroup.copy(
-            name = newName,
-            description = newDescription.ifEmpty { null },
-            groupPicture = groupPicturePath,
-            tags = newTags
-        )
-
         lifecycleScope.launch(Dispatchers.IO) {
-            groupsRepository.updateGroup(updatedGroup)
+            var finalPictureUrl: String? = currentGroup.profilePicturePath
+            if (!groupPicturePath.isNullOrEmpty()) {
+                val uploadResponse = uploadGroupPicture(groupId, groupPicturePath!!)
+                if (uploadResponse.isSuccessful) {
+                    val imageUrl = uploadResponse.body()?.imageUrl
+                    if (!imageUrl.isNullOrEmpty()) {
+                        finalPictureUrl = imageUrl
+                    } else {
+                        finalPictureUrl = groupPicturePath
+                    }
+                } else {
+                    println("Group photo upload failed: ${uploadResponse.errorBody()?.string()}")
+                }
+            }
 
-            withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "Group updated successfully!", Toast.LENGTH_SHORT).show()
-                requireActivity().onBackPressedDispatcher.onBackPressed()
+            val updatedGroup = currentGroup.copy(
+                groupName = newName,
+                description = newDescription.ifEmpty { null },
+                profilePicturePath = finalPictureUrl,
+                tags = newTags
+            )
+
+            try {
+                val updateResponse = groupsRepository.editGroupOnline(groupId, updatedGroup)
+                withContext(Dispatchers.Main) {
+                    if (updateResponse.isSuccessful) {
+                        updateResponse.body()?.let { newGroup ->
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                groupsRepository.insertGroup(newGroup)
+                            }
+                        }
+                        Toast.makeText(requireContext(), "Group updated successfully!", Toast.LENGTH_SHORT).show()
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                    } else {
+                        Toast.makeText(requireContext(), "Update failed: ${updateResponse.message()}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 
+    private suspend fun uploadGroupPicture(groupId: Long, imagePath: String): Response<ImageUploadResponse> {
+        val file = File(imagePath)
+        val requestBody = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+        val imagePart = MultipartBody.Part.createFormData("picture", file.name, requestBody)
+        return groupsRepository.uploadGroupPicture(groupId, imagePart)
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import `is`.hi.hbv601_team_12.data.entities.Event
 import `is`.hi.hbv601_team_12.data.entities.Group
 import kotlinx.coroutines.flow.Flow
 
@@ -23,19 +22,17 @@ interface GroupDao {
     suspend fun delete(group: Group)
 
     @Query("SELECT * FROM `groups` WHERE id = :id")
-    suspend fun getGroup(id: Int): Group?
+    suspend fun getGroup(id: Long): Group?
 
     @Query("SELECT * FROM `groups` ORDER BY id ASC")
     fun getAllGroups(): Flow<List<Group>>
 
     @Query("SELECT * FROM `groups` WHERE adminId = :adminId ORDER BY id ASC")
-    fun getGroupsByAdmin(adminId: Int): Flow<List<Group>>
+    fun getGroupsByAdmin(adminId: Long): Flow<List<Group>>
 
     @Query("UPDATE `groups` SET members = :newMembers WHERE id = :groupId")
-    suspend fun updateGroupMembers(groupId: Int, newMembers: String)
+    suspend fun updateGroupMembers(groupId: Long, newMembers: List<Long>)
 
-    @Query("SELECT * FROM groups WHERE id = :groupId")
-    suspend fun getGroupById(groupId: Int): Group?
+    @Query("SELECT * FROM `groups` WHERE id = :groupId")
+    suspend fun getGroupById(groupId: Long): Group?
 }
-
-

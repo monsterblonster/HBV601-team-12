@@ -29,8 +29,8 @@ import androidx.room.Index
     ]
 )
 data class EventParticipant(
-    val eventId: Int,
-    val userId: Int,
+    val eventId: Long,
+    val userId: Long,
     val status: ParticipantStatus = ParticipantStatus.INVITED,
 )
 

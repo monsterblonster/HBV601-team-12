@@ -1,47 +1,42 @@
 package `is`.hi.hbv601_team_12.data.offlineRepositories
 
 import `is`.hi.hbv601_team_12.data.daos.GroupDao
-import `is`.hi.hbv601_team_12.data.entities.Event
 import `is`.hi.hbv601_team_12.data.entities.Group
-import `is`.hi.hbv601_team_12.data.repositories.GroupsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class OfflineGroupsRepository(private val groupDao: GroupDao) : GroupsRepository {
+class OfflineGroupsRepository(
+    private val groupDao: GroupDao
+) {
 
-    override fun getAllGroupsStream(): Flow<List<Group>> {
-        return groupDao.getAllGroups()
+    fun getAllGroupsStream(): Flow<List<Group>> = groupDao.getAllGroups()
+
+    fun getGroupStream(id: Long): Flow<Group?> = flow {
+        emit(groupDao.getGroup(id))
     }
 
-    override fun getGroupStream(id: Int): Flow<Group?> {
-        return flow {
-            emit(groupDao.getGroup(id))
-        }
-    }
-    suspend fun getGroupById(groupId: Int): Group? {
+    fun getGroupsByAdmin(adminId: Long): Flow<List<Group>> = groupDao.getGroupsByAdmin(adminId)
+
+    suspend fun getGroupById(groupId: Long): Group? {
         return groupDao.getGroupById(groupId)
     }
 
-    override fun getGroupsByAdmin(adminId: Int): Flow<List<Group>> {
-        return groupDao.getGroupsByAdmin(adminId)
+    suspend fun insertGroup(group: Group) {
+        groupDao.insert(group)
     }
 
-    override suspend fun insertGroup(group: Group) {
-        return groupDao.insert(group)
+    suspend fun updateGroup(group: Group) {
+        groupDao.update(group)
     }
 
-    override suspend fun updateGroup(group: Group) {
-        return groupDao.update(group)
+    suspend fun deleteGroup(group: Group) {
+        groupDao.delete(group)
     }
 
-    override suspend fun deleteGroup(group: Group) {
-        return groupDao.delete(group)
-    }
-
-    override suspend fun updateGroupMembers(groupId: Int, newMembers: List<Int>) {
-        val group = groupDao.getGroup(groupId)
-        if (group != null) {
-            val updatedGroup = group.updateMembers(newMembers)
+    suspend fun updateGroupMembers(groupId: Long, newMembers: List<Long>) {
+        val existingGroup = groupDao.getGroup(groupId)
+        if (existingGroup != null) {
+            val updatedGroup = existingGroup.updateMembers(newMembers)
             groupDao.update(updatedGroup)
         }
     }

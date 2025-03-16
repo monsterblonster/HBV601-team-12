@@ -5,15 +5,15 @@
     <item
         android:id="@+id/action_edit_profile"
         android:title="@string/edit_profile"
-        app:showAsAction="never"/>
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/action_create_group"
         android:title="@string/create_group"
-        app:showAsAction="never"/>
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/action_logout"
         android:title="@string/logout"
-        app:showAsAction="never"/>
+        app:showAsAction="never" />
 </menu>

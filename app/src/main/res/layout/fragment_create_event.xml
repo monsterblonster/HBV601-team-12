@@ -1,51 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Event Name -->
     <EditText
         android:id="@+id/eventNameEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Event Name" />
+        android:hint="@string/event_name_hint" />
 
+    <!-- Event Description -->
     <EditText
         android:id="@+id/eventDescriptionEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Event Description" />
+        android:hint="@string/event_description_hint" />
 
+    <!-- Start Date and Time label -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Date and Time"
+        android:text="@string/start_date_time"
         android:layout_marginTop="16dp" />
 
+    <!-- Button to select Start Date/Time -->
     <Button
         android:id="@+id/startDateTimeButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select Start Date and Time" />
+        android:text="@string/select_start_date_time" />
 
+    <!-- End Date and Time label -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="End Date and Time"
+        android:text="@string/end_date_time"
         android:layout_marginTop="16dp" />
 
+    <!-- Button to select End Date/Time -->
     <Button
         android:id="@+id/endDateTimeButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select End Date and Time" />
+        android:text="@string/select_end_date_time" />
 
+    <!-- Save Event Button -->
     <Button
         android:id="@+id/saveEventButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Save Event"
+        android:text="@string/save_event"
         android:layout_marginTop="24dp" />
 
 </LinearLayout>

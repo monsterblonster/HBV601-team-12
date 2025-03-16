@@ -24,17 +24,17 @@ interface UserDao {
     fun getAllUsers(): Flow<List<User>>
 
     @Query("SELECT * FROM users WHERE id = :id")
-    fun getUser(id: Int): Flow<User?>
+    fun getUser(id: Long): Flow<User?>
 
-    @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
+    @Query("SELECT * FROM users WHERE emailAddress = :email LIMIT 1")
     suspend fun getUserByEmail(email: String): User?
 
-    @Query("SELECT * FROM users WHERE username = :username LIMIT 1")
+    @Query("SELECT * FROM users WHERE userName = :username LIMIT 1")
     suspend fun getUserByUsername(username: String): User?
 
     @Query("SELECT * FROM users WHERE id = :id LIMIT 1")
-    suspend fun getUserById(id: Int): User?
+    suspend fun getUserById(id: Long): User?
 
-    @Query("SELECT * FROM users WHERE username = :username AND password = :password LIMIT 1")
+    @Query("SELECT * FROM users WHERE userName = :username AND userPW = :password LIMIT 1")
     suspend fun login(username: String, password: String): User?
 }

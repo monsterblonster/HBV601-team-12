@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,20 +16,27 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import `is`.hi.hbv601_team_12.data.AppDatabase
+import coil.load
+import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.entities.User
 import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository
+import `is`.hi.hbv601_team_12.data.onlineRepositories.OnlineUsersRepository
 import `is`.hi.hbv601_team_12.databinding.FragmentEditProfileBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.FileOutputStream
 
 class EditProfileFragment : Fragment() {
     private var _binding: FragmentEditProfileBinding? = null
     private val binding get() = _binding!!
-    private lateinit var repository: OfflineUsersRepository
+
+    private lateinit var onlineUsersRepository: OnlineUsersRepository
+    private lateinit var offlineCache: OfflineUsersRepository
     private var currentUser: User? = null
     private var profilePicturePath: String? = null
 
@@ -43,8 +51,9 @@ class EditProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val db = AppDatabase.getDatabase(requireContext())
-        repository = OfflineUsersRepository(db.userDao())
+        val db = `is`.hi.hbv601_team_12.data.AppDatabase.getDatabase(requireContext())
+        offlineCache = OfflineUsersRepository(db.userDao())
+        onlineUsersRepository = OnlineUsersRepository(offlineCache)
 
         loadUserProfile()
 
@@ -64,33 +73,63 @@ class EditProfileFragment : Fragment() {
     private fun loadUserProfile() {
         lifecycleScope.launch(Dispatchers.IO) {
             val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Activity.MODE_PRIVATE)
-            val username = sharedPref.getString("loggedInUsername", null)
-
-            if (username != null) {
-                val user = repository.getUserByUsername(username)
+            val userId = sharedPref.getLong("loggedInUserId", -1L)
+            Log.d("EditProfileFragment", "Loading user profile for userId: $userId")
+            if (userId == -1L) {
                 withContext(Dispatchers.Main) {
-                    if (user != null) {
-                        currentUser = user
-                        binding.etFullName.setText(user.fullName)
-                        binding.etUsername.setText(user.username)
-                        binding.etEmail.setText(user.email)
-                        binding.etPhoneNumber.setText(user.phoneNumber)
-                        binding.etAddress.setText(user.address)
+                    Toast.makeText(requireContext(), "No logged-in user found!", Toast.LENGTH_SHORT).show()
+                }
+                return@launch
+            }
 
-                        user.profilePicture?.let {
-                            val file = File(it)
-                            if (file.exists()) {
-                                binding.ivProfilePicture.setImageURI(Uri.fromFile(file))
-                                profilePicturePath = it
+            try {
+                val response = onlineUsersRepository.getUserById(userId)
+                Log.d("EditProfileFragment", "getUserById response code: ${response.code()}")
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        response.body()?.let { user ->
+                            currentUser = user
+                            cacheUserLocally(user)
+
+                            binding.etFullName.setText(user.fullName)
+                            binding.etUsername.setText(user.userName)
+                            binding.etEmail.setText(user.emailAddress)
+                            binding.etPhoneNumber.setText(user.phoneNumber)
+                            binding.etAddress.setText(user.address)
+
+                            user.profilePicturePath?.let { urlOrPath ->
+                                binding.ivProfilePicture.setImageResource(R.drawable.default_profile)
+                                if (urlOrPath.startsWith("http")) {
+                                    binding.ivProfilePicture.load(urlOrPath) {
+                                        crossfade(true)
+                                        placeholder(R.drawable.default_profile)
+                                        error(R.drawable.default_profile)
+                                    }
+                                } else {
+                                    val file = File(urlOrPath)
+                                    if (file.exists()) {
+                                        binding.ivProfilePicture.setImageURI(Uri.fromFile(file))
+                                    } else {
+                                        binding.ivProfilePicture.setImageResource(R.drawable.default_profile)
+                                    }
+                                }
                             }
+
+
+                            Log.d("EditProfileFragment", "Loaded user: $user")
                         }
                     } else {
-                        Toast.makeText(requireContext(), "User not found!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Failed to load profile: ${response.message()}", Toast.LENGTH_SHORT).show()
                     }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
+
 
     private fun saveUserProfile() {
         val fullName = binding.etFullName.text.toString()
@@ -105,30 +144,67 @@ class EditProfileFragment : Fragment() {
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
-            currentUser?.let {
-                val oldUsername = it.username
+            currentUser?.let { user ->
+                user.fullName = fullName
+                user.userName = username
+                user.emailAddress = email
+                user.phoneNumber = phoneNumber
+                user.address = address
 
-                it.fullName = fullName
-                it.username = username
-                it.email = email
-                it.phoneNumber = phoneNumber
-                it.address = address
-                it.profilePicture = profilePicturePath
+                if (profilePicturePath != null) {
+                    val file = File(profilePicturePath)
+                    val requestBody = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+                    val imagePart = MultipartBody.Part.createFormData("picture", file.name, requestBody)
 
-                repository.updateUser(it)
-
-                val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Activity.MODE_PRIVATE)
-                with(sharedPref.edit()) {
-                    if (oldUsername != username) putString("loggedInUsername", username)
-                    apply()
+                    val uploadResponse = onlineUsersRepository.uploadProfilePicture(user.id, imagePart)
+                    if (uploadResponse.isSuccessful) {
+                        val imageUrl = uploadResponse.body()?.imageUrl
+                        user.profilePicturePath = imageUrl
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(requireContext(), "Image upload failed: ${uploadResponse.message()}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
+                user.confirmPassword = user.userPW
 
+                try {
+                    val response = onlineUsersRepository.updateUser(user.id, user)
+                    withContext(Dispatchers.Main) {
+                        if (response.isSuccessful) {
+                            response.body()?.let { updatedUser ->
+                                cacheUserLocally(updatedUser)
+                                val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Activity.MODE_PRIVATE)
+                                with(sharedPref.edit()) {
+                                    putString("loggedInUsername", updatedUser.userName)
+                                    apply()
+                                }
+                                Toast.makeText(requireContext(), "Profile Updated!", Toast.LENGTH_SHORT).show()
+                                findNavController().navigateUp()
+                            }
+                        } else {
+                            Toast.makeText(requireContext(), "Update failed: ${response.message()}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } ?: run {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Profile Updated!", Toast.LENGTH_SHORT).show()
-                    findNavController().navigateUp()
+                    Toast.makeText(requireContext(), "No user available to update.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
+
+
+
+
+
+    private suspend fun cacheUserLocally(user: User) {
+        offlineCache.cacheUser(user)
     }
 
     private fun openGallery() {
@@ -187,8 +263,11 @@ class EditProfileFragment : Fragment() {
         return file.absolutePath
     }
 
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
+
 }

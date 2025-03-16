@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" 
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -10,42 +11,42 @@
         android:id="@+id/eventNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Event Name"
+        android:text="@string/event_name_label"
         android:textSize="24sp" />
 
     <TextView
         android:id="@+id/eventDescriptionTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Event Description"
+        android:text="@string/event_description_label"
         android:layout_marginTop="8dp" />
 
     <TextView
         android:id="@+id/eventStartTimeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Time"
+        android:text="@string/start_time_label"
         android:layout_marginTop="16dp" />
 
     <TextView
         android:id="@+id/eventDurationTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Duration"
+        android:text="@string/event_duration_label"
         android:layout_marginTop="8dp" />
 
     <TextView
         android:id="@+id/eventLocationTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Location"
+        android:text="@string/event_location_label"
         android:layout_marginTop="8dp" />
 
     <TextView
         android:id="@+id/participantsTitleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Participants"
+        android:text="@string/participants"
         android:textSize="18sp"
         android:layout_marginTop="16dp" />
 
@@ -54,6 +55,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        tools:listitem="@layout/item_participant" /> 
+        tools:listitem="@layout/item_participant" />
 
 </LinearLayout>

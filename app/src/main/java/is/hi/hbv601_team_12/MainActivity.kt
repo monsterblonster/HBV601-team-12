@@ -45,6 +45,7 @@ class MainActivity : AppCompatActivity() {
             ?.findNavController() ?: throw IllegalStateException("NavHostFragment not found")
 
         val sharedPref = getSharedPreferences("VibeVaultPrefs", MODE_PRIVATE)
+        //sharedPref.edit().clear().apply(); // long villa lausn
         val isLoggedIn = sharedPref.getBoolean("isLoggedIn", false)
         this.userId = sharedPref.getLong("loggedInUserId", -1L)
 

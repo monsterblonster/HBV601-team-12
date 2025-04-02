@@ -73,7 +73,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/eventsHeaderTextView"
         app:layout_constraintHeight_default="percent"
-        app:layout_constraintHeight_percent="0.5"
+        app:layout_constraintHeight_percent="0.3"
         tools:listitem="@layout/item_member" />
 
     <TextView

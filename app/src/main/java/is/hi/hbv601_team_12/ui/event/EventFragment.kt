@@ -123,20 +123,32 @@ class EventFragment : Fragment() {
     }
 
 
+        private fun updateUI(event: Event) {
+            view?.apply {
+                findViewById<TextView>(R.id.eventNameTextView)?.text = event.name
+                findViewById<TextView>(R.id.eventDescriptionTextView)?.text = event.description
 
-    private fun updateUI(event: Event) {
-        view?.findViewById<TextView>(R.id.eventNameTextView)?.text = event.name
-        view?.findViewById<TextView>(R.id.eventDescriptionTextView)?.text = event.description
+                val dateTimeFormatter = DateTimeFormatter.ofPattern("EEEE, MMM d 'at' h:mm a")
+                val formattedDateTime = event.startDateTime?.format(dateTimeFormatter) ?: "Time not set"
+                findViewById<TextView>(R.id.eventDateTimeTextView)?.text = formattedDateTime
 
-        val formattedStartTime = event.startDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) ?: "Start time unavailable"
-        view?.findViewById<TextView>(R.id.eventStartTimeTextView)?.text = "Start: $formattedStartTime"
+                val hours = event.durationMinutes / 60
+                val minutes = event.durationMinutes % 60
+                val durationText = when {
+                    hours > 0 && minutes > 0 -> "$hours hr ${minutes} min"
+                    hours > 0 -> "$hours hr"
+                    else -> "$minutes min"
+                }
+                findViewById<TextView>(R.id.eventDurationTextView)?.text = durationText
 
-        view?.findViewById<TextView>(R.id.eventDurationTextView)?.text = "Duration: ${event.durationMinutes} minutes"
-        view?.findViewById<TextView>(R.id.eventLocationTextView)?.text = "Location: ${event.location}"
-    }
+                findViewById<TextView>(R.id.eventLocationTextView)?.text = event.location ?: "Location not specified"
+            }
+        }
+
+
 
     private fun setupMenu() {
-        if (creatorId != getCurrentUserId().toLong()) return // Only show menu for event creator
+        if (creatorId != getCurrentUserId().toLong()) return
 
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
@@ -153,7 +165,6 @@ class EventFragment : Fragment() {
                         findNavController().navigate(R.id.action_eventFragment_to_editEventFragment, bundle)
                         true
                     }
-
                     R.id.action_delete_event -> {
                         showDeleteConfirmationDialog()
                         true

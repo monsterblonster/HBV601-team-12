@@ -1,28 +1,37 @@
 package `is`.hi.hbv601_team_12.ui.event
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.textfield.TextInputEditText
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.entities.Event
 import `is`.hi.hbv601_team_12.data.onlineRepositories.OnlineEventsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.util.Calendar
 
 class CreateEventFragment : Fragment() {
 
     private lateinit var eventsRepository: OnlineEventsRepository
     private var groupId: Long? = null
+    private var startDateTime: LocalDateTime? = null
+    private var endDateTime: LocalDateTime? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,16 +42,33 @@ class CreateEventFragment : Fragment() {
         eventsRepository = OnlineEventsRepository()
         groupId = arguments?.getLong("groupId")
 
-        view.findViewById<Button>(R.id.saveEventButton).setOnClickListener {
-            val eventName = view.findViewById<EditText>(R.id.eventNameEditText).text.toString()
-            val eventDescription = view.findViewById<EditText>(R.id.eventDescriptionEditText).text.toString()
-            val startDateTime = LocalDateTime.now() // TODO: Replace with user input
-            val durationMinutes = 120 // TODO: Replace with user input
-            val location = "Some Location" // TODO: Replace with user input
+        // Setup date/time pickers
+        view.findViewById<TextInputEditText>(R.id.startDateTimeEditText).setOnClickListener {
+            showDateTimePicker(true)
+        }
 
+        view.findViewById<TextInputEditText>(R.id.endDateTimeEditText).setOnClickListener {
+            showDateTimePicker(false)
+        }
+
+        view.findViewById<Button>(R.id.saveEventButton).setOnClickListener {
+            val eventName = view.findViewById<TextInputEditText>(R.id.eventNameEditText).text.toString()
+            val eventDescription = view.findViewById<TextInputEditText>(R.id.eventDescriptionEditText).text.toString()
+            val location = view.findViewById<TextInputEditText>(R.id.locationEditText).text.toString()
 
             if (eventName.isBlank()) {
                 Toast.makeText(requireContext(), "Event name cannot be empty!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (startDateTime == null || endDateTime == null) {
+                Toast.makeText(requireContext(), "Please select start and end times!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val durationMinutes = ChronoUnit.MINUTES.between(startDateTime, endDateTime).toInt()
+            if (durationMinutes <= 0) {
+                Toast.makeText(requireContext(), "End time must be after start time!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -53,7 +79,7 @@ class CreateEventFragment : Fragment() {
                     event = Event(
                         name = eventName,
                         description = eventDescription,
-                        startDateTime = startDateTime,
+                        startDateTime = startDateTime!!,
                         durationMinutes = durationMinutes,
                         creatorId = getCurrentUserId().toLong(),
                         location = location,
@@ -62,15 +88,6 @@ class CreateEventFragment : Fragment() {
                         groupId = groupId!!
                     )
                 )
-
-                // Invite all users in the group to the event
-            /*    if (groupId != null) {
-                    val group = groupsRepository.getGroupById(groupId!!)
-                    if (group != null) {
-                        val userIds = group.getMembersList()
-                        eventsRepository.inviteUsersToEvent(eventId.toInt(), userIds)
-                    }
-                }*/
 
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
@@ -88,9 +105,50 @@ class CreateEventFragment : Fragment() {
         return view
     }
 
+    private fun showDateTimePicker(isStartTime: Boolean) {
+        val calendar = Calendar.getInstance()
+        val datePicker = DatePickerDialog(
+            requireContext(),
+            { _, year, month, day ->
+                val timePicker = TimePickerDialog(
+                    requireContext(),
+                    { _, hour, minute ->
+                        val selectedDateTime = LocalDateTime.of(
+                            LocalDate.of(year, month + 1, day),
+                            LocalTime.of(hour, minute))
+
+                            if (isStartTime) {
+                                startDateTime = selectedDateTime
+                            } else {
+                                endDateTime = selectedDateTime
+                            }
+                                    updateDateTimeFields()
+                    },
+                    calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.MINUTE),
+                    false
+                )
+                timePicker.show()
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+        datePicker.show()
+    }
+
+    private fun updateDateTimeFields() {
+        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy hh:mm a")
+        view?.findViewById<TextInputEditText>(R.id.startDateTimeEditText)?.setText(
+            startDateTime?.format(formatter) ?: ""
+        )
+        view?.findViewById<TextInputEditText>(R.id.endDateTimeEditText)?.setText(
+            endDateTime?.format(formatter) ?: ""
+        )
+    }
+
     private fun getCurrentUserId(): Long {
         val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Context.MODE_PRIVATE)
         return sharedPref.getLong("loggedInUserId", -1L)
     }
-
 }

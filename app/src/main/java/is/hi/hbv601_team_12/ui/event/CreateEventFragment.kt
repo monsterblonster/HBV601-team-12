@@ -1,13 +1,16 @@
 package `is`.hi.hbv601_team_12.ui.event
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -31,7 +34,7 @@ class CreateEventFragment : Fragment() {
     private lateinit var eventsRepository: OnlineEventsRepository
     private var groupId: Long? = null
     private var startDateTime: LocalDateTime? = null
-    private var endDateTime: LocalDateTime? = null
+    private var durationHours: Int = 1 // Default duration
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,14 +44,16 @@ class CreateEventFragment : Fragment() {
 
         eventsRepository = OnlineEventsRepository()
         groupId = arguments?.getLong("groupId")
+        println("DEBUG: Creating event for group $groupId")
 
-        // Setup date/time pickers
+        // Setup start time picker
         view.findViewById<TextInputEditText>(R.id.startDateTimeEditText).setOnClickListener {
-            showDateTimePicker(true)
+            showDateTimePicker()
         }
 
-        view.findViewById<TextInputEditText>(R.id.endDateTimeEditText).setOnClickListener {
-            showDateTimePicker(false)
+        // Setup duration input
+        view.findViewById<TextInputEditText>(R.id.durationEditText).setOnClickListener {
+            showDurationPicker()
         }
 
         view.findViewById<Button>(R.id.saveEventButton).setOnClickListener {
@@ -61,14 +66,8 @@ class CreateEventFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            if (startDateTime == null || endDateTime == null) {
-                Toast.makeText(requireContext(), "Please select start and end times!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val durationMinutes = ChronoUnit.MINUTES.between(startDateTime, endDateTime).toInt()
-            if (durationMinutes <= 0) {
-                Toast.makeText(requireContext(), "End time must be after start time!", Toast.LENGTH_SHORT).show()
+            if (startDateTime == null) {
+                Toast.makeText(requireContext(), "Please select start time!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -80,7 +79,7 @@ class CreateEventFragment : Fragment() {
                         name = eventName,
                         description = eventDescription,
                         startDateTime = startDateTime!!,
-                        durationMinutes = durationMinutes,
+                        durationMinutes = durationHours * 60, // Convert hours to minutes
                         creatorId = getCurrentUserId().toLong(),
                         location = location,
                         isPublic = true,
@@ -105,24 +104,20 @@ class CreateEventFragment : Fragment() {
         return view
     }
 
-    private fun showDateTimePicker(isStartTime: Boolean) {
+
+    private fun showDateTimePicker() {
         val calendar = Calendar.getInstance()
+
         val datePicker = DatePickerDialog(
             requireContext(),
             { _, year, month, day ->
                 val timePicker = TimePickerDialog(
                     requireContext(),
                     { _, hour, minute ->
-                        val selectedDateTime = LocalDateTime.of(
+                        startDateTime = LocalDateTime.of(
                             LocalDate.of(year, month + 1, day),
                             LocalTime.of(hour, minute))
-
-                            if (isStartTime) {
-                                startDateTime = selectedDateTime
-                            } else {
-                                endDateTime = selectedDateTime
-                            }
-                                    updateDateTimeFields()
+                            updateDateTimeFields()
                     },
                     calendar.get(Calendar.HOUR_OF_DAY),
                     calendar.get(Calendar.MINUTE),
@@ -137,13 +132,50 @@ class CreateEventFragment : Fragment() {
         datePicker.show()
     }
 
+    private fun showDurationPicker() {
+        val durations = arrayOf("1 hour", "2 hours", "3 hours", "4 hours", "Custom")
+        AlertDialog.Builder(requireContext())
+            .setTitle("Select Duration")
+            .setItems(durations) { _, which ->
+                durationHours = when (which) {
+                    0 -> 1
+                    1 -> 2
+                    2 -> 3
+                    3 -> 4
+                    else -> showCustomDurationPicker()
+                }
+                updateDurationField()
+            }
+            .show()
+    }
+
+    private fun showCustomDurationPicker(): Int {
+        val input = EditText(requireContext()).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = "Enter hours"
+        }
+        AlertDialog.Builder(requireContext())
+            .setTitle("Custom Duration")
+            .setView(input)
+            .setPositiveButton("OK") { _, _ ->
+                durationHours = input.text.toString().toIntOrNull() ?: 1
+                updateDurationField()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+        return 1 // Default if cancelled
+    }
+
     private fun updateDateTimeFields() {
         val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy hh:mm a")
         view?.findViewById<TextInputEditText>(R.id.startDateTimeEditText)?.setText(
             startDateTime?.format(formatter) ?: ""
         )
-        view?.findViewById<TextInputEditText>(R.id.endDateTimeEditText)?.setText(
-            endDateTime?.format(formatter) ?: ""
+    }
+
+    private fun updateDurationField() {
+        view?.findViewById<TextInputEditText>(R.id.durationEditText)?.setText(
+            "$durationHours ${if (durationHours == 1) "hour" else "hours"}"
         )
     }
 

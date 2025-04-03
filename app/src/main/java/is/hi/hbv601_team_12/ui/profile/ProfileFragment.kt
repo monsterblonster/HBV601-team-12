@@ -70,8 +70,6 @@ class ProfileFragment : Fragment() {
             onlineRepo = onlineGroupsRepo
         )
 
-        val offlineEventsRepo = OfflineEventsRepository(db.eventDao())
-        val onlineEventsRepository = OnlineEventsRepository()
         eventsRepository = OnlineEventsRepository()
 
         binding.groupsRecyclerView.layoutManager = LinearLayoutManager(requireContext())

@@ -29,32 +29,30 @@ class EventsAdapter(
 
     override fun getItemCount() = events.size
 
-    class EventViewHolder(itemView: View, private val onEventClick: (Long) -> Unit) :
-        RecyclerView.ViewHolder(itemView) {
-        private val eventNameTextView: TextView = itemView.findViewById(R.id.eventNameTextView)
-        private val eventDescriptionTextView: TextView = itemView.findViewById(R.id.eventDescriptionTextView)
-        private val eventDateTimeTextView: TextView = itemView.findViewById(R.id.eventDateTimeTextView)
-        private val eventParticipantsTextView: TextView = itemView.findViewById(R.id.eventParticipantsTextView)
+        class EventViewHolder(itemView: View, private val onEventClick: (Long) -> Unit) :
+            RecyclerView.ViewHolder(itemView) {
+            private val eventNameTextView: TextView = itemView.findViewById(R.id.eventNameTextView)
+            private val eventDescriptionTextView: TextView = itemView.findViewById(R.id.eventDescriptionTextView)
+            private val eventDateTimeTextView: TextView = itemView.findViewById(R.id.eventDateTimeTextView)
+            private val eventParticipantsTextView: TextView = itemView.findViewById(R.id.eventParticipantsTextView)
 
-        fun bind(event: Event, formatter: DateTimeFormatter) {
-            eventNameTextView.text = event.name
+            fun bind(event: Event, formatter: DateTimeFormatter) {
+                eventNameTextView.text = event.name
 
-            if (!event.description.isNullOrEmpty()) {
+                // Handle description
                 eventDescriptionTextView.text = event.description
-                eventDescriptionTextView.visibility = View.VISIBLE
-            } else {
-                eventDescriptionTextView.visibility = View.GONE
-            }
+                eventDescriptionTextView.visibility = if (event.description.isNullOrEmpty()) View.GONE else View.VISIBLE
 
-            eventDateTimeTextView.text = event.startDateTime.format(formatter)
+                // Handle nullable startDateTime
+                eventDateTimeTextView.text = event.startDateTime?.format(formatter) ?: "No date set"
 
-            // Fetch the latest participant count from API
-            val participantCount = event.going.size
-            eventParticipantsTextView.text = "$participantCount going"
+                // Handle participants
+                val participantCount = event.going?.size ?: 0
+                eventParticipantsTextView.text = "$participantCount going"
 
-            itemView.setOnClickListener {
-                onEventClick(event.id)
+                itemView.setOnClickListener {
+                    event.id?.let { onEventClick(it) }
+                }
             }
         }
     }
-}

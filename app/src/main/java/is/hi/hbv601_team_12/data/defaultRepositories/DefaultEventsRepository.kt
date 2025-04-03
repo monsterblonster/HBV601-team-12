@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import okhttp3.ResponseBody
 import retrofit2.Response
 
-class DefaultEventsRepository(
+class DefaultEventsRepository(  // aldrei notad!
     private val offlineRepo: OfflineEventsRepository,
     private val onlineRepo: OnlineEventsRepository
 ) : EventsRepository {

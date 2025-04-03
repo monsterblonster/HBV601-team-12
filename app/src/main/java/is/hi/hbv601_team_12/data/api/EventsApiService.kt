@@ -90,8 +90,8 @@ interface EventsApiService {
         @Path("commentId") commentId: Long
     ): Response<Comment>
 
-    @GET("group/{id}/events")
-    suspend fun getEventsByGroupId(@Path("id") groupId: Long): Response<List<Event>>
+    @GET("event/group/{groupId}")
+    suspend fun getEventsByGroupId(@Path("groupId") groupId: Long): Response<List<Event>>
 
     @GET("user/{id}/events")
     suspend fun getEventsForUser(@Path("id") userId: Long): Response<List<Event>>

@@ -35,4 +35,7 @@ interface GroupDao {
 
     @Query("SELECT * FROM `groups` WHERE id = :groupId")
     suspend fun getGroupById(groupId: Long): Group?
+
+    @Query("SELECT * FROM `groups`")
+    suspend fun getAllGroupsOnce(): List<Group>
 }

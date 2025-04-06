@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
@@ -16,6 +17,7 @@ import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository
 import `is`.hi.hbv601_team_12.data.onlineRepositories.OnlineUsersRepository
 import `is`.hi.hbv601_team_12.data.defaultRepositories.DefaultUsersRepository
+import `is`.hi.hbv601_team_12.data.entities.Group
 import `is`.hi.hbv601_team_12.data.repositories.UsersRepository
 import `is`.hi.hbv601_team_12.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +64,67 @@ class MainActivity : AppCompatActivity() {
                         if (response.isSuccessful) {
                             val user = response.body()
                             if (user != null) {
+                                val navView = binding.navView
+                                val menu = navView.menu
+                                val groupItem = menu.findItem(R.id.nav_groups)
+                                val groupSubMenu = groupItem.subMenu
+
+                                var userGroups: List<Group> = emptyList()  // Declare outside coroutine
+
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    val allGroups = db.groupDao().getAllGroupsOnce()
+                                    userGroups = allGroups.filter { group -> user.id in group.members }
+
+                                    withContext(Dispatchers.Main) {
+                                        groupSubMenu?.clear()
+                                        for (group in userGroups) {
+                                            groupSubMenu?.add(Menu.NONE, group.id.toInt(), Menu.NONE, group.groupName)
+                                        }
+
+                                        navView.setNavigationItemSelectedListener { item ->
+                                            val matchedGroup = userGroups.find { it.id.toInt() == item.itemId }
+
+                                            if (matchedGroup != null) {
+                                                val bundle = Bundle().apply {
+                                                    putString("groupId", matchedGroup.id.toString())
+                                                }
+                                                val navController = supportFragmentManager
+                                                    .findFragmentById(R.id.nav_host_fragment_content_main)
+                                                    ?.findNavController()
+
+                                                navController?.navigate(R.id.GroupFragment, bundle)
+                                                binding.drawerLayout.closeDrawers()
+                                                true
+                                            } else {
+                                                NavigationUI.onNavDestinationSelected(item, navController!!)
+                                                binding.drawerLayout.closeDrawers()
+                                                true
+                                            }
+                                        }
+                                    }
+                                }
+
+                                navView.setNavigationItemSelectedListener { item ->
+                                    val matchedGroup = userGroups.find { it.id.toInt() == item.itemId }
+
+                                    if (matchedGroup != null) {
+                                        val bundle = Bundle().apply {
+                                            putString("groupId", matchedGroup.id.toString())  // pass ID as string
+                                        }
+                                        val navController = supportFragmentManager
+                                            .findFragmentById(R.id.nav_host_fragment_content_main)
+                                            ?.findNavController()
+
+                                        navController?.navigate(R.id.GroupFragment, bundle)
+                                        binding.drawerLayout.closeDrawers()
+                                        true
+                                    } else {
+                                        NavigationUI.onNavDestinationSelected(item, navController!!)
+                                        binding.drawerLayout.closeDrawers()
+                                        true
+                                    }
+                                }
+
                                 lifecycleScope.launch(Dispatchers.IO) {
                                     defaultUsersRepository.cacheUser(user)
                                 }

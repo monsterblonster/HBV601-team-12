@@ -77,6 +77,8 @@
     <string name="event_location_label">Location</string>
     <string name="participants">Participants</string>
     <string name="edit_event_title">Edit Event</string>
+    <string name="enter_your_comment">Enter your comment</string>
+    <string name="post_comment">Comment</string>
 
 
 </resources>

@@ -1,9 +1,13 @@
 package `is`.hi.hbv601_team_12
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -16,11 +20,15 @@ import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository
 import `is`.hi.hbv601_team_12.data.onlineRepositories.OnlineUsersRepository
 import `is`.hi.hbv601_team_12.data.defaultRepositories.DefaultUsersRepository
+import `is`.hi.hbv601_team_12.data.entities.Notification
 import `is`.hi.hbv601_team_12.data.repositories.UsersRepository
 import `is`.hi.hbv601_team_12.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,6 +47,7 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
+        val notificationHelper = NotificationHelper(this)
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
         val navController = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
@@ -113,7 +122,55 @@ class MainActivity : AppCompatActivity() {
                 supportActionBar?.setDisplayHomeAsUpEnabled(true)
             }
         }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            while (isActive) {
+                if (ActivityCompat.checkSelfPermission(
+                        this@MainActivity,
+                        android.Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        ActivityCompat.requestPermissions(
+                            this@MainActivity,
+                            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                            1
+                        )
+                    }
+                }
+                try {
+                    val notificationResponse: Response<List<Notification>> = onlineRepo.getUserNotifications(userId)
+
+                    if (notificationResponse.isSuccessful && notificationResponse.body() != null) {
+                        val notifications = notificationResponse.body()!!
+                        if (notifications.isNotEmpty()) {
+                            for (notification in notifications) {
+                                // send the notification to the user with the title and message from the response
+                                notificationHelper.sendNotification("Message from vibevault", notification.message)
+                            }
+                            // clear the notifications from the server
+                            onlineRepo.clearNotifications(userId)
+                        }
+
+                    } else {
+                        // If the response is not successful, we will send a default message
+                        // notificationHelper.sendNotification("Notification from VibeVault", "There was a problem getting the notification")
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@MainActivity, "Notification Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                        // notificationHelper.sendNotification("Notification from VibeVault", "Error: ${e.message}")
+                    }
+                }
+
+                delay(5000) // 5 seconds
+            }
+        }
     }
+
+
+
+
 
     private fun attemptOfflineLogin(
         navController: androidx.navigation.NavController,

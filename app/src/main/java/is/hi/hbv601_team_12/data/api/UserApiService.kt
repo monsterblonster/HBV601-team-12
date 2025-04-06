@@ -3,6 +3,7 @@ package `is`.hi.hbv601_team_12.data.api
 import `is`.hi.hbv601_team_12.data.entities.Group
 import `is`.hi.hbv601_team_12.data.models.BasicResponse
 import `is`.hi.hbv601_team_12.data.entities.Invitation
+import `is`.hi.hbv601_team_12.data.entities.Notification
 import `is`.hi.hbv601_team_12.data.entities.User
 import `is`.hi.hbv601_team_12.data.models.*
 import okhttp3.MultipartBody
@@ -51,6 +52,16 @@ interface UserApiService {
     suspend fun getUserGroups(
         @Path("id") userId: Long
     ): Response<List<Group>>
+
+    @GET("user/{id}/notifications")
+    suspend fun getUserNotifications(
+        @Path("id") userId: Long
+    ): Response<List<Notification>>
+
+    @DELETE("user/{id}/notifications")
+    suspend fun clearNotifications(
+        @Path("id") userId: Long
+    ): Response<BasicResponse>
 
 
 }

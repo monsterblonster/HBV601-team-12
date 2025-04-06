@@ -21,7 +21,7 @@ import `is`.hi.hbv601_team_12.data.entities.*
         User::class,
         EventParticipant::class,
     ],
-    version = 44, // uppfærð til að resetta DB
+    version = 45, // uppfærð til að resetta DB
     exportSchema = false
 )
 @TypeConverters(

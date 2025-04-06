@@ -1,7 +1,9 @@
 package `is`.hi.hbv601_team_12.data.onlineRepositories
 
 import `is`.hi.hbv601_team_12.data.api.RetrofitClient
+import `is`.hi.hbv601_team_12.data.entities.Notification
 import `is`.hi.hbv601_team_12.data.entities.User
+import `is`.hi.hbv601_team_12.data.models.BasicResponse
 import `is`.hi.hbv601_team_12.data.models.ImageUploadResponse
 import `is`.hi.hbv601_team_12.data.models.LoginResponse
 import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository
@@ -117,5 +119,46 @@ class OnlineUsersRepository(
                 "Network Error: ${e.message}".toResponseBody("text/plain".toMediaTypeOrNull())
             )
         }
+    }
+
+    suspend fun getUserNotifications(userId: Long): Response<List<Notification>> {
+        return try {
+            val response = RetrofitClient.userApiService.getUserNotifications(userId)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    println("Notifications Success: $it")
+                }
+            } else {
+                println("Notifications Failed: ${response.errorBody()?.string()}")
+            }
+            response
+            } catch (e: IOException){
+                println("Network Error: ${e.message}")
+                Response.error(
+                    500,
+                    "Network Error: ${e.message}".toResponseBody("text/plain".toMediaTypeOrNull())
+                )
+            }
+    }
+
+    suspend fun clearNotifications(userId: Long): Response<BasicResponse> {
+        return try {
+            val response = RetrofitClient.userApiService.clearNotifications(userId)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    println("Clear Notifications Success: $it")
+                }
+            } else {
+                println("Clear Notifications Failed: ${response.errorBody()?.string()}")
+            }
+            response
+        } catch (e: IOException)
+        {
+            println("Network Error: ${e.message}")
+            Response.error(
+                500,
+                "Network Error: ${e.message}".toResponseBody("text/plain".toMediaTypeOrNull())
+            )
+            }
     }
 }

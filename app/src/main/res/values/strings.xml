@@ -83,5 +83,10 @@
     <string name="view_comments">View Comments</string>
     <string name="no_comments_yet">No comments yet.</string>
 
+    <string name="date_time">Date/Time</string>
+    <string name="duration">Duration</string>
+    <string name="location">Location</string>
+    <string name="join_event">Join Event</string>
+
 
 </resources>

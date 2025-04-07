@@ -5,39 +5,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:background="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="24dp">
 
-        <!-- Event Name -->
-        <TextView
-            android:id="@+id/eventNameTextView"
-            style="@style/TextAppearance.MaterialComponents.Headline5"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            tools:text="Team Meeting" />
-
-        <!-- Event Description -->
-        <TextView
-            android:id="@+id/eventDescriptionTextView"
-            style="@style/TextAppearance.MaterialComponents.Body1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            tools:text="Weekly team sync to discuss project progress" />
-
-        <!-- Event Details Card -->
+        <!-- Event Header Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="8dp">
+            android:layout_marginBottom="24dp"
+            app:cardElevation="1dp"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="@color/purple_200"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -45,111 +30,162 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Date and Time -->
-                <LinearLayout
+                <!-- Event Name -->
+                <TextView
+                    android:id="@+id/eventNameTextView"
+                    style="@style/TextAppearance.MaterialComponents.Headline5"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
+                    android:layout_marginBottom="12dp"
+                    android:textColor="@color/purple_700"
+                    tools:text="Team Meeting" />
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="8dp"
-                        android:src="@drawable/ic_baseline_access_time_24"></ImageView>
+                <!-- Event Description -->
+                <TextView
+                    android:id="@+id/eventDescriptionTextView"
+                    style="@style/TextAppearance.MaterialComponents.Body1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:textColor="@color/purple_500"
+                    tools:text="Weekly team sync to discuss project progress" />
+
+                <!-- Details Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@color/teal_200" />
+
+                <!-- Event Details Grid -->
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:rowCount="3">
+
+                    <!-- Date/Time -->
+                    <TextView
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/date_time"
+                        android:textColor="@color/purple_500" />
 
                     <TextView
                         android:id="@+id/eventDateTimeTextView"
                         style="@style/TextAppearance.MaterialComponents.Body1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        tools:text="Friday, May 12 at 2:00 PM" />
-                </LinearLayout>
+                        android:layout_marginBottom="8dp"
+                        android:textColor="@color/black"
+                        tools:text="May 12, 2023 • 2:00 PM" />
 
-                <!-- Duration -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
+                    <!-- Duration -->
+                    <TextView
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/duration"
+                        android:textColor="@color/purple_500" />
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="8dp"
-                        android:src="@drawable/ic_baseline_schedule_24"></ImageView>
                     <TextView
                         android:id="@+id/eventDurationTextView"
                         style="@style/TextAppearance.MaterialComponents.Body1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:textColor="@color/black"
                         tools:text="2 hours" />
-                </LinearLayout>
 
-                <!-- Location -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="8dp"
-                        android:src="@drawable/ic_baseline_location_on_24"
-                        ></ImageView>
+                    <!-- Location -->
+                    <TextView
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/location"
+                        android:textColor="@color/purple_500" />
 
                     <TextView
                         android:id="@+id/eventLocationTextView"
                         style="@style/TextAppearance.MaterialComponents.Body1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textColor="@color/black"
                         tools:text="Meeting Room A" />
-                </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="8dp">
+                </GridLayout>
 
-                    <TextView
-                        android:id="@+id/eventCreationDateTextView"
-                        style="@style/TextAppearance.MaterialComponents.Caption"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="Created on May 10, 2023" />
-                </LinearLayout>
+                <!-- Creation Date -->
+                <TextView
+                    android:id="@+id/eventCreationDateTextView"
+                    style="@style/TextAppearance.MaterialComponents.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:textColor="@color/teal_700"
+                    tools:text="Created on May 10, 2023" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-
-
-        <Button
-            android:id="@+id/viewCommentsButton"
+        <!-- Action Buttons -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/view_comments"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            />
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/viewCommentsButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/view_comments"
+                app:strokeColor="@color/purple_500"
+                android:textColor="@color/purple_500" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/joinEventButton"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/join_event"
+                android:backgroundTint="@color/purple_500"
+                android:textColor="@color/white" />
+        </LinearLayout>
 
         <!-- Participants Section -->
-        <TextView
-            android:id="@+id/participantsTitleTextView"
-            style="@style/TextAppearance.MaterialComponents.Headline6"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="@string/participants" />
+            app:cardElevation="1dp"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="@color/purple_200"
+            app:strokeWidth="1dp">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/participantsRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:listitem="@layout/item_participant" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
+                <TextView
+                    android:id="@+id/participantsTitleTextView"
+                    style="@style/TextAppearance.MaterialComponents.Headline6"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="@string/participants"
+                    android:textColor="@color/purple_700" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/participantsRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:listitem="@layout/item_participant" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </ScrollView>

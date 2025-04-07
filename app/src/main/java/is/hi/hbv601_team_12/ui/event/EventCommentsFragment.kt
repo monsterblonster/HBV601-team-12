@@ -32,7 +32,6 @@ class EventCommentsFragment : Fragment() {
     private var eventId: Long? = null
     private lateinit var commentAdapter: CommentAdapter
 
-    // Example list of comments (replace this with actual data loading)
     private val comments: MutableList<Comment> = mutableListOf<Comment>()
 
     override fun onCreateView(
@@ -75,7 +74,6 @@ class EventCommentsFragment : Fragment() {
             val commentText = binding.commentEditText.text.toString()
             if (commentText.isNotEmpty()) {
                 lifecycleScope.launch(Dispatchers.IO) {
-                    // Add new comment to list and update
                     val newComment = Comment(
                         authorName = getCurrentUserName(),
                         commentData = commentText,
@@ -95,8 +93,7 @@ class EventCommentsFragment : Fragment() {
                             return@launch
                         }
                         withContext(Dispatchers.Main) {
-                            comments.add(newComment)
-                            commentAdapter.notifyItemInserted(comments.size - 1)
+                            fetchEventComments(eventId!!)
                         }
                         binding.commentEditText.text.clear()
                     } catch (e: IOException) {
@@ -118,16 +115,19 @@ class EventCommentsFragment : Fragment() {
                 println("getEventComments response: $response")
                 println("getEventComments body: ${response.body()}")
                 if (response.isSuccessful) {
-                    val comments = response.body().orEmpty()
+                    val fetchedComments = response.body().orEmpty()
                     withContext(Dispatchers.Main) {
-                        if (comments.isEmpty()) {
+                        if (fetchedComments.isEmpty()) {
                             binding.noCommentsTextView.visibility = View.VISIBLE
                             binding.commentsRecyclerView.visibility = View.GONE
                         } else {
                             binding.noCommentsTextView.visibility = View.GONE
                             binding.commentsRecyclerView.visibility = View.VISIBLE
+
+                            comments.clear()
+                            comments.addAll(fetchedComments)
+                            commentAdapter.notifyDataSetChanged()
                         }
-                        binding.commentsRecyclerView.adapter = CommentAdapter(comments)
                     }
                 }
                 } catch (e: IOException) {

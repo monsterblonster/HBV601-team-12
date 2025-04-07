@@ -44,7 +44,7 @@ class EventsAdapter(
                 eventDescriptionTextView.visibility = if (event.description.isNullOrEmpty()) View.GONE else View.VISIBLE
 
                 // Handle nullable startDateTime
-                eventDateTimeTextView.text = event.startDateTime?.format(formatter) ?: "No date set"
+                eventDateTimeTextView.text = event.date?.format(formatter) ?: "No date set"
 
                 // Handle participants
                 val participantCount = event.going?.size ?: 0

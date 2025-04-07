@@ -70,27 +70,31 @@ class CreateEventFragment : Fragment() {
                 Toast.makeText(requireContext(), "Please select start time!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+            startDateTime = startDateTime!!.truncatedTo(ChronoUnit.MINUTES).withSecond(1)
 
             lifecycleScope.launch(Dispatchers.IO) {
+
                 val response = eventsRepository.createEvent(
                     userId = getCurrentUserId().toLong(),
                     groupId = groupId ?: return@launch,
                     event = Event(
                         name = eventName,
                         description = eventDescription,
-                        startDateTime = startDateTime!!,
+                        date = startDateTime!!,
                         durationMinutes = durationHours * 60, // Convert hours to minutes
                         creatorId = getCurrentUserId().toLong(),
                         location = location,
                         isPublic = true,
                         maxParticipants = null,
-                        groupId = groupId!!
+                        groupId = groupId!!,
+                        comments = emptyList(),
                     )
                 )
 
+
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
-                        Toast.makeText(requireContext(), "Event created successfully!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Time: ${startDateTime.toString()}", Toast.LENGTH_LONG).show()
                         val eventId = response.body()?.id ?: -1L
                         val bundle = Bundle().apply { putLong("eventId", eventId) }
                         findNavController().navigate(R.id.eventFragment, bundle)

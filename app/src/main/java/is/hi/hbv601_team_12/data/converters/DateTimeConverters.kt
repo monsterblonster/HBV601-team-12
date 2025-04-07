@@ -7,6 +7,7 @@ import java.time.ZoneId
 
 // leidindi með að vista localdatetime i sqlite
 class DateTimeConverters {
+    /**
     @TypeConverter
     fun fromTimestamp(value: Long?): LocalDateTime? {
         return value?.let {
@@ -17,5 +18,21 @@ class DateTimeConverters {
     @TypeConverter
     fun dateTimeToTimestamp(dateTime: LocalDateTime?): Long? {
         return dateTime?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli()
+    }
+    */
+
+    @TypeConverter
+    fun toDate(dateString: String?): LocalDateTime? {
+        return if (dateString == null) {
+            null
+        } else {
+            LocalDateTime.parse(dateString)
+        }
+    }
+
+    @TypeConverter
+    fun toDateString(date: LocalDateTime?): String? {
+        println(date?.toString())
+        return date?.toString()
     }
 }

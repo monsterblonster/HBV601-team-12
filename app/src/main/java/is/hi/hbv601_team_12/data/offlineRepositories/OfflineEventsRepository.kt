@@ -46,7 +46,7 @@ class OfflineEventsRepository(private val eventDao: EventDao) : EventsRepository
         val event = Event(
             name = name,
             description = description,
-            startDateTime = startDateTime,
+            date = startDateTime,
             durationMinutes = durationMinutes,
             creatorId = creatorId,
             location = location,

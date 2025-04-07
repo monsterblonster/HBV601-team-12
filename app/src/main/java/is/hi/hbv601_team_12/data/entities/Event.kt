@@ -12,15 +12,16 @@ data class Event(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val groupId: Long,
+    var timeCreated: LocalDateTime? = null,
+    var date: LocalDateTime? = null,
     var name: String,
     var description: String?,
-    @JsonAdapter(LocalDateTimeSerializer::class)
-    var startDateTime: LocalDateTime,
     var durationMinutes: Int,
     var creatorId: Long,
     var going: List<Long> = emptyList(),
     var maybe: List<Long> = emptyList(),
     var cantGo: List<Long> = emptyList(),
+    var comments: List<Long> = emptyList(),
 
 
     //  Optional

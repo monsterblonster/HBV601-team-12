@@ -25,5 +25,8 @@ interface CommentDao {
 
     @Query("SELECT * from comments ORDER BY id ASC")
     fun getAllComments(): Flow<List<Comment>>
-    // Þarf líklega fleiri query-ur
+
+    @Query("SELECT * from comments WHERE eventId = :eventId ORDER BY id ASC")
+    fun getCommentsForEvent(eventId: Long): Flow<List<Comment>>
+
 }

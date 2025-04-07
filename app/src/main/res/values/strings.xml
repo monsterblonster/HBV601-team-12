@@ -79,6 +79,8 @@
     <string name="edit_event_title">Edit Event</string>
     <string name="enter_your_comment">Enter your comment</string>
     <string name="post_comment">Comment</string>
+    <string name="comments_list">Comment List</string>
+    <string name="view_comments">View Comments</string>
 
 
 </resources>

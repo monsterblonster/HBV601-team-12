@@ -3,10 +3,8 @@ package `is`.hi.hbv601_team_12.data.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.LocalDateTime
-import `is`.hi.hbv601_team_12.data.converters.LocalDateTimeSerializer
-import com.google.gson.annotations.JsonAdapter
 
-
+// Changed entity properties to match the database columns on remote repo
 @Entity(tableName = "events",)
 data class Event(
     @PrimaryKey(autoGenerate = true)

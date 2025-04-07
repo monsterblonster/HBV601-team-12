@@ -1,4 +1,4 @@
-package `is`.hi.hbv601_team_12.ui.profile
+package `is`.hi.hbv601_team_12.ui.group
 
 import android.app.Activity
 import android.content.Intent
@@ -19,6 +19,9 @@ import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.entities.Group
 import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository
+import `is`.hi.hbv601_team_12.data.onlineRepositories.OnlineGroupsRepository
+import `is`.hi.hbv601_team_12.data.defaultRepositories.DefaultGroupsRepository
+import `is`.hi.hbv601_team_12.data.repositories.GroupsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,7 +35,7 @@ class CreateGroupFragment : Fragment() {
     private lateinit var groupTagsInput: EditText
     private lateinit var groupMaxMembersInput: EditText
     private lateinit var createGroupButton: Button
-    private lateinit var groupsRepository: OfflineGroupsRepository
+    private lateinit var groupsRepository: GroupsRepository
 
     private lateinit var groupImageView: ImageView
     private lateinit var uploadGroupPictureButton: Button
@@ -40,7 +43,8 @@ class CreateGroupFragment : Fragment() {
     private var groupPicturePath: String? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_create_group, container, false)
@@ -56,7 +60,9 @@ class CreateGroupFragment : Fragment() {
         takeGroupPictureButton = view.findViewById(R.id.btnTakeGroupPicture)
 
         val db = AppDatabase.getDatabase(requireContext())
-        groupsRepository = OfflineGroupsRepository(db.groupDao())
+        val offlineGroupsRepo = OfflineGroupsRepository(db.groupDao())
+        val onlineGroupsRepo = OnlineGroupsRepository()
+        groupsRepository = DefaultGroupsRepository(offlineGroupsRepo, onlineGroupsRepo)
 
         createGroupButton.setOnClickListener {
             createGroup()
@@ -142,28 +148,36 @@ class CreateGroupFragment : Fragment() {
 
         val maxMembers = maxMembersText.toIntOrNull() ?: 5
 
-        val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", 0)
-        val adminId = sharedPref.getInt("loggedInUserId", -1)
+        val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Activity.MODE_PRIVATE)
+        val adminId = sharedPref.getLong("loggedInUserId", -1L)
+        val adminUsername = sharedPref.getString("loggedInUsername", null)
 
-        if (adminId == -1) {
+        if (adminId == -1L || adminUsername.isNullOrEmpty()) {
             Toast.makeText(requireContext(), "Error: No logged-in user found", Toast.LENGTH_SHORT).show()
             return
         }
 
+        val tagsList = if (groupTags.isEmpty()) emptyList()
+        else groupTags.split(",").map { it.trim() }
+
         val newGroup = Group(
-            name = groupName,
+            groupName = groupName,
             description = groupDescription.ifEmpty { null },
-            tags = groupTags.ifEmpty { null },
+            tags = tagsList,
             maxMembers = maxMembers,
             adminId = adminId,
-            groupPicture = groupPicturePath
+            profilePicturePath = groupPicturePath
         )
 
         lifecycleScope.launch(Dispatchers.IO) {
-            groupsRepository.insertGroup(newGroup)
+            val response = groupsRepository.createGroup(newGroup, adminUsername)
             withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "Group Created Successfully!", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.action_createGroupFragment_to_profileFragment)
+                if (response.isSuccessful) {
+                    Toast.makeText(requireContext(), "Group Created Successfully!", Toast.LENGTH_SHORT).show()
+                    findNavController().navigate(R.id.action_createGroupFragment_to_profileFragment)
+                } else {
+                    Toast.makeText(requireContext(), "Server Error: ${response.message()}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

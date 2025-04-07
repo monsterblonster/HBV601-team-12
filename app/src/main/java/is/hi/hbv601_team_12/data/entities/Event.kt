@@ -4,21 +4,26 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.LocalDateTime
 
-@Entity(
-    tableName = "events",
-)
+// Changed entity properties to match the database columns on remote repo
+@Entity(tableName = "events",)
 data class Event(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val groupId: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val groupId: Long,
+    var timeCreated: LocalDateTime? = null,
+    var date: LocalDateTime? = null,
     var name: String,
     var description: String?,
-    var startDateTime: LocalDateTime,
-    var durationMinutes: Int, 
-    var creatorId: Int,
+    var durationMinutes: Int,
+    var creatorId: Long,
+    var going: List<Long> = emptyList(),
+    var maybe: List<Long> = emptyList(),
+    var cantGo: List<Long> = emptyList(),
+    var comments: List<Long> = emptyList(),
+
 
     //  Optional
-    var location: String? = null, 
+    var location: String? = null,
     var isPublic: Boolean = true,
     var maxParticipants: Int? = null
-    
 )

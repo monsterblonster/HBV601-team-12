@@ -1,13 +1,9 @@
 package `is`.hi.hbv601_team_12.ui.event
 
 import android.app.AlertDialog
+import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -20,21 +16,22 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import `is`.hi.hbv601_team_12.R
-import `is`.hi.hbv601_team_12.data.AppDatabase
-import `is`.hi.hbv601_team_12.data.entities.Event
-import `is`.hi.hbv601_team_12.data.entities.User
-import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineEventsRepository
+import `is`.hi.hbv601_team_12.data.entities.*
 import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository
+import `is`.hi.hbv601_team_12.data.onlineRepositories.*
+import `is`.hi.hbv601_team_12.ui.adapters.ParticipantAdapter
+import `is`.hi.hbv601_team_12.ui.adapters.ParticipantWithStatus
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.format.DateTimeFormatter
+
 class EventFragment : Fragment() {
 
-    private lateinit var eventsRepository: OfflineEventsRepository
-    private lateinit var usersRepository: OfflineUsersRepository
-    private var eventId: Int? = null
+    private lateinit var eventsRepository: OnlineEventsRepository
+    private lateinit var usersRepository: OnlineUsersRepository
+    private var eventId: Long? = null
+    private var creatorId: Long? = null
     private lateinit var participantAdapter: ParticipantAdapter
 
     override fun onCreateView(
@@ -43,20 +40,25 @@ class EventFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_event, container, false)
 
-        val db = AppDatabase.getDatabase(requireContext())
-        eventsRepository = OfflineEventsRepository(db.eventDao())
-        usersRepository = OfflineUsersRepository(db.userDao()) 
+        val db = `is`.hi.hbv601_team_12.data.AppDatabase.getDatabase(requireContext())
+        val offlineUsersRepo = OfflineUsersRepository(db.userDao())
 
-        eventId = arguments?.getInt("eventId")
+        eventsRepository = OnlineEventsRepository()
+        usersRepository = OnlineUsersRepository(offlineUsersRepo)
+        eventId = arguments?.getLong("eventId")
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.participantsRecyclerView)
         participantAdapter = ParticipantAdapter()
         recyclerView.adapter = participantAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
+        val commentsButton = view.findViewById<Button>(R.id.viewCommentsButton)
+        commentsButton.setOnClickListener {
+            navigateToEventComments(eventId!!)
+        }
+
         if (eventId != null) {
             loadEventDetails(eventId!!)
-            setupMenu()
         } else {
             Toast.makeText(requireContext(), "Invalid Event ID!", Toast.LENGTH_SHORT).show()
         }
@@ -64,36 +66,99 @@ class EventFragment : Fragment() {
         return view
     }
 
-    private fun loadEventDetails(eventId: Int) {
+    private fun loadEventDetails(eventId: Long) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val event = eventsRepository.getEventById(eventId)
-            val participants = eventsRepository.getParticipantsForEvent(eventId)
+            val response = eventsRepository.getEvent(eventId)
 
             withContext(Dispatchers.Main) {
-                if (event != null) {
-                    view?.findViewById<TextView>(R.id.eventNameTextView)?.text = event.name
-                    view?.findViewById<TextView>(R.id.eventDescriptionTextView)?.text = event.description
-                    view?.findViewById<TextView>(R.id.eventStartTimeTextView)?.text = "Start: ${event.startDateTime}"
-                    view?.findViewById<TextView>(R.id.eventDurationTextView)?.text = "Duration: ${event.durationMinutes} minutes"
-                    view?.findViewById<TextView>(R.id.eventLocationTextView)?.text = "Location: ${event.location}"
-
-                    val participantWithStatusList = participants.map { participant ->
-                        val user = usersRepository.getUserById(participant.userId) 
-                        if (user != null) {
-                            ParticipantWithStatus(user, participant.status)
-                        } else {
-                            null
-                        }
-                    }.filterNotNull()
-
-                    participantAdapter.submitList(participantWithStatusList)
+                if (response.isSuccessful) {
+                    val event = response.body()
+                    if (event != null) {
+                        creatorId = event.creatorId
+                        updateUI(event)
+                        setupMenu()
+                        loadParticipants(eventId)
+                    }
                 } else {
-                    Toast.makeText(requireContext(), "Event not found!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Failed to load event!", Toast.LENGTH_SHORT).show()
+                    findNavController().navigateUp()
                 }
             }
         }
     }
-    private fun setupMenu() { // TODO bara fyrir creator
+
+    private fun loadParticipants(eventId: Long) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            // Each call returns List<User>
+            val goingResponse = eventsRepository.getGoingUsers(eventId)
+            val maybeResponse = eventsRepository.getMaybeUsers(eventId)
+            val cantGoResponse = eventsRepository.getCantGoUsers(eventId)
+
+            if (goingResponse.isSuccessful && maybeResponse.isSuccessful && cantGoResponse.isSuccessful) {
+                val goingUsers = goingResponse.body().orEmpty()
+                val maybeUsers = maybeResponse.body().orEmpty()
+                val cantGoUsers = cantGoResponse.body().orEmpty()
+
+                // Combine them:
+                // We get a distinct list of all Users from going + maybe + cantGo
+                val allUsers = (goingUsers + maybeUsers + cantGoUsers).distinctBy { it.id }
+
+                val participants = mutableListOf<ParticipantWithStatus>()
+
+                // Determine each user's status
+                allUsers.forEach { user ->
+                    val status = when (user) {
+                        in goingUsers -> ParticipantStatus.GOING
+                        in maybeUsers -> ParticipantStatus.MAYBE
+                        in cantGoUsers -> ParticipantStatus.DECLINED
+                        else -> ParticipantStatus.INVITED
+                    }
+                    participants.add(ParticipantWithStatus(user, status))
+                }
+
+                withContext(Dispatchers.Main) {
+                    participantAdapter.submitList(participants)
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Failed to load participants!", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+
+        private fun updateUI(event: Event) {
+            view?.apply {
+                findViewById<TextView>(R.id.eventNameTextView)?.text = event.name
+                findViewById<TextView>(R.id.eventDescriptionTextView)?.text = event.description
+
+                val dateTimeFormatter = DateTimeFormatter.ofPattern("EEEE, MMM d 'at' h:mm a")
+                val formattedDateTime = event.date?.format(dateTimeFormatter) ?: "Time not set"
+                findViewById<TextView>(R.id.eventDateTimeTextView)?.text = formattedDateTime
+
+                val hours = event.durationMinutes / 60
+                val minutes = event.durationMinutes % 60
+                val durationText = when {
+                    hours > 0 && minutes > 0 -> "$hours hr ${minutes} min"
+                    hours > 0 -> "$hours hr"
+                    else -> "$minutes min"
+                }
+                findViewById<TextView>(R.id.eventDurationTextView)?.text = durationText
+
+                findViewById<TextView>(R.id.eventLocationTextView)?.text = event.location ?: "Location not specified"
+
+                val creationDateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy")
+                val formattedCreationDate = event.timeCreated?.format(creationDateFormatter) ?: "Date not set"
+                findViewById<TextView>(R.id.eventCreationDateTextView)?.text = "Created on $formattedCreationDate"
+            }
+        }
+
+
+
+    private fun setupMenu() {
+        if (creatorId != getCurrentUserId().toLong()) return
+
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -104,12 +169,11 @@ class EventFragment : Fragment() {
                 return when (menuItem.itemId) {
                     R.id.action_edit_event -> {
                         val bundle = Bundle().apply {
-                            putInt("eventId", eventId!!)
+                            putLong("eventId", eventId!!)
                         }
                         findNavController().navigate(R.id.action_eventFragment_to_editEventFragment, bundle)
                         true
                     }
-
                     R.id.action_delete_event -> {
                         showDeleteConfirmationDialog()
                         true
@@ -128,15 +192,32 @@ class EventFragment : Fragment() {
             .setNegativeButton("Cancel", null)
             .show()
     }
-    
+
     private fun deleteEvent() {
         lifecycleScope.launch(Dispatchers.IO) {
-            eventsRepository.deleteEvent(eventsRepository.getEventById(eventId!!)!!)
+            val response = eventsRepository.deleteEvent(eventId!!, getCurrentUserId().toLong())
+
             withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "Event deleted successfully", Toast.LENGTH_SHORT)
-                    .show()
-                findNavController().navigateUp()
+                if (response.isSuccessful) {
+                    Toast.makeText(requireContext(), "Event deleted successfully", Toast.LENGTH_SHORT).show()
+                    findNavController().navigateUp()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to delete event!", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
+
+    private fun navigateToEventComments(eventId: Long) {
+        val bundle = Bundle().apply {
+            putLong("eventId", eventId)
+        }
+        findNavController().navigate(R.id.action_eventFragment_to_eventCommentsFragment, bundle)
+    }
+
+    private fun getCurrentUserId(): Long {
+        val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Context.MODE_PRIVATE)
+        return sharedPref.getLong("loggedInUserId", -1L)
+    }
+
 }

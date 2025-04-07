@@ -2,27 +2,31 @@ package `is`.hi.hbv601_team_12.data.offlineRepositories
 
 import `is`.hi.hbv601_team_12.data.daos.UserDao
 import `is`.hi.hbv601_team_12.data.entities.User
-import `is`.hi.hbv601_team_12.data.repositories.UsersRepository
 import kotlinx.coroutines.flow.Flow
 
-class OfflineUsersRepository(private val userDao: UserDao) : UsersRepository {
+class OfflineUsersRepository(private val userDao: UserDao) {
 
-    override fun getAllUsersStream(): Flow<List<User>> = userDao.getAllUsers()
+    suspend fun cacheUser(user: User) {
+        userDao.insert(user)
+    }
 
-    override fun getUserStream(id: Int): Flow<User?> = userDao.getUser(id)
+    fun getAllUsersStream(): Flow<List<User>> = userDao.getAllUsers()
 
-    override suspend fun insertUser(user: User) = userDao.insert(user)
+    fun getUserStream(id: Long): Flow<User?> = userDao.getUser(id)
 
-    override suspend fun updateUser(user: User) = userDao.update(user)
+    suspend fun clearCache(user: User) {
+        userDao.delete(user)
+    }
 
-    override suspend fun deleteUser(user: User) = userDao.delete(user)
+    suspend fun getUserById(userId: Long): User? {
+        return userDao.getUserById(userId)
+    }
 
-    override suspend fun getUserByEmail(email: String): User? = userDao.getUserByEmail(email)
+    suspend fun getUserByEmail(email: String): User? {
+        return userDao.getUserByEmail(email)
+    }
 
-    override suspend fun getUserByUsername(username: String): User? = userDao.getUserByUsername(username)
-
-    override suspend fun getUserById(id: Int): User? = userDao.getUserById(id)
-
-    override suspend fun loginUser(username: String, password: String): User? = userDao.login(username, password)
+    suspend fun getUserByUsername(username: String): User? {
+        return userDao.getUserByUsername(username)
+    }
 }
-

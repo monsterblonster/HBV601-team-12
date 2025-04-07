@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
         android:id="@+id/action_edit_event"
-        android:title="Edit Event" />
+        android:title="Edit Event"
+        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_delete_event"
-        android:title="Delete Event" />
+        android:title="Delete Event"
+        app:showAsAction="never" />
 </menu>
-

@@ -1,10 +1,11 @@
 package `is`.hi.hbv601_team_12.ui.group
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -14,31 +15,40 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import `is`.hi.hbv601_team_12.R
+import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.entities.Group
-import `is`.hi.hbv601_team_12.data.entities.Event
-import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineEventsRepository
-import `is`.hi.hbv601_team_12.data.repositories.GroupsRepository
-import `is`.hi.hbv601_team_12.data.repositories.UsersRepository
+import `is`.hi.hbv601_team_12.data.entities.User
+import `is`.hi.hbv601_team_12.data.offlineRepositories.*
+import `is`.hi.hbv601_team_12.data.onlineRepositories.*
+import `is`.hi.hbv601_team_12.data.defaultRepositories.*
+import `is`.hi.hbv601_team_12.data.repositories.*
 import `is`.hi.hbv601_team_12.databinding.FragmentGroupBinding
-import `is`.hi.hbv601_team_12.ui.events.EventsAdapter
+import `is`.hi.hbv601_team_12.ui.adapters.EventsAdapter
+import `is`.hi.hbv601_team_12.ui.adapters.MembersAdapter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
 class GroupFragment : Fragment() {
+
     private var _binding: FragmentGroupBinding? = null
     private val binding get() = _binding!!
-    private var groupId: Int? = null
+
+    private var groupId: Long? = null
     private lateinit var groupsRepository: GroupsRepository
     private lateinit var usersRepository: UsersRepository
-    private lateinit var eventRepository: OfflineEventsRepository
+    private lateinit var invitationsRepository: InvitationsRepository
+    private lateinit var eventsRepository: OnlineEventsRepository
     private lateinit var eventsAdapter: EventsAdapter
+
     private var isAdmin: Boolean = false
     private lateinit var currentGroup: Group
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentGroupBinding.inflate(inflater, container, false)
@@ -48,121 +58,133 @@ class GroupFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val db = AppDatabase.getDatabase(requireContext())
+
+        val offlineGroupsRepo = OfflineGroupsRepository(db.groupDao())
+        val onlineGroupsRepo = OnlineGroupsRepository()
+        groupsRepository = DefaultGroupsRepository(offlineGroupsRepo, onlineGroupsRepo)
+
+        val offlineUsersRepo = OfflineUsersRepository(db.userDao())
+        val onlineUsersRepo = OnlineUsersRepository(offlineUsersRepo)
+        usersRepository = DefaultUsersRepository(offlineUsersRepo, onlineUsersRepo)
+
+        val offlineInvitesRepo = OfflineInvitationsRepository(db.invitationDao())
+        val onlineInvitesRepo = OnlineInvitationRepository()
+        invitationsRepository = DefaultInvitationsRepository(offlineInvitesRepo, onlineInvitesRepo)
+
+        eventsRepository = OnlineEventsRepository()
+
         setupMenu()
 
         binding.fabCreateEvent.setOnClickListener {
             navigateToCreateEvent()
         }
 
-        val db = `is`.hi.hbv601_team_12.data.AppDatabase.getDatabase(requireContext())
-        groupsRepository =
-            `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository(db.groupDao())
-        usersRepository =
-            `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository(db.userDao())
-        eventRepository =
-            `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineEventsRepository(db.eventDao())
-
         binding.eventsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-
-        groupId = arguments?.getString("groupId")?.toIntOrNull()
-
-        if (groupId != null) {
-            fetchGroupDetails(groupId!!)
-            loadEvents(groupId!!)
-        } else {
+        groupId = arguments?.getString("groupId")?.toLongOrNull()
+        if (groupId == null) {
             Toast.makeText(requireContext(), "Invalid Group ID!", Toast.LENGTH_SHORT).show()
+        } else {
+            fetchLatestGroupDetails(groupId!!)
+            loadGroupEvents(groupId!!)
         }
     }
 
-    private fun fetchGroupDetails(groupId: Int) {
+    private fun fetchLatestGroupDetails(gId: Long) {
         lifecycleScope.launch(Dispatchers.IO) {
-            groupsRepository.getGroupStream(groupId).collect { group ->
-                withContext(Dispatchers.Main) {
-                    if (group != null) {
-                        currentGroup = group
-                        displayGroupDetails(group)
-                        checkAdminPrivileges(group.adminId)
-                    } else {
-                        Toast.makeText(
-                            requireContext(),
-                            "Group details not found!",
-                            Toast.LENGTH_SHORT
-                        ).show()
+            try {
+                val response = groupsRepository.getGroupById(gId)
+                if (response.isSuccessful) {
+                    response.body()?.let { fetchedGroup ->
+                        withContext(Dispatchers.Main) {
+                            currentGroup = fetchedGroup
+                            displayGroupDetails(fetchedGroup)
+                            checkAdminPrivileges(fetchedGroup.adminId)
+                        }
+                    } ?: run {
+                        loadGroupOffline(gId)
                     }
+                } else {
+                    loadGroupOffline(gId)
+                }
+            } catch (e: Exception) {
+                loadGroupOffline(gId)
+            }
+        }
+    }
+
+    private fun loadGroupOffline(gId: Long) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val offlineGroup = groupsRepository.getGroupStream(gId).first()
+            withContext(Dispatchers.Main) {
+                if (offlineGroup != null) {
+                    currentGroup = offlineGroup
+                    displayGroupDetails(offlineGroup)
+                    checkAdminPrivileges(offlineGroup.adminId)
+                } else {
+                    Toast.makeText(requireContext(), "Group details not found offline!", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
-    private fun loadEvents(groupId: Int) {
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+    private fun loadGroupEvents(groupId: Long) {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val eventsFlow = eventRepository.getEventsForGroupStream(groupId)
-
-                eventsFlow.collect { events ->
-                    val participantCounts = mutableMapOf<Int, Int>()
-                    events.forEach { event ->
-                        val count = eventRepository.getParticipantsForEvent(event.id).size
-                        participantCounts[event.id] = count
-                    }
+                val response = eventsRepository.getEventsByGroupId(groupId)
+                println("getEventsByGroupId response: $response")
+                println("getEventsByGroupId body: ${response.body()}")
+                if (response.isSuccessful) {
+                    val events = response.body().orEmpty()
                     withContext(Dispatchers.Main) {
-                        if (!isAdded || _binding == null) return@withContext
-
                         if (events.isEmpty()) {
                             binding.noEventsTextView.visibility = View.VISIBLE
                             binding.eventsRecyclerView.visibility = View.GONE
                         } else {
                             binding.noEventsTextView.visibility = View.GONE
                             binding.eventsRecyclerView.visibility = View.VISIBLE
-
-                            eventsAdapter = EventsAdapter(events, participantCounts) { eventId ->
-                                onEventClicked(eventId)
+                            eventsAdapter = EventsAdapter(events) { eventId ->
+                                navigateToEvent(eventId)
                             }
                             binding.eventsRecyclerView.adapter = eventsAdapter
-                            eventsAdapter.notifyDataSetChanged() // ui update
                         }
                     }
-
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    if (!isAdded || _binding == null) return@withContext
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG)
-                        .show()
+                    Toast.makeText(requireContext(), "Error fetching group events: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
     }
 
-    private fun checkAdminPrivileges(adminId: Int) {
+    private fun navigateToEvent(eventId: Long) {
+        val bundle = bundleOf("eventId" to eventId)
+        findNavController().navigate(R.id.action_groupFragment_to_eventFragment, bundle)
+    }
+
+    private fun checkAdminPrivileges(adminId: Long) {
         val currentUserID = getCurrentUserID()
         isAdmin = (currentUserID == adminId)
         requireActivity().invalidateOptionsMenu()
     }
 
-    private fun getCurrentUserID(): Int {
-        val sharedPref = requireActivity().getSharedPreferences(
-            "VibeVaultPrefs",
+    private fun getCurrentUserID(): Long {
+        val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs",
             android.content.Context.MODE_PRIVATE
         )
-        return sharedPref.getInt("loggedInUserId", -1)
+        return sharedPref.getLong("loggedInUserId", -1L)
     }
 
     private fun displayGroupDetails(group: Group) {
-        binding.groupNameTextView.text = group.name
+        binding.groupNameTextView.text = group.groupName
         binding.groupDescriptionTextView.text = group.description ?: "No description available"
+        binding.groupTagsTextView.text = group.tags.joinToString(", ")
+        binding.groupTagsTextView.visibility = if (group.tags.isNotEmpty()) View.VISIBLE else View.GONE
 
-        if (!group.tags.isNullOrBlank()) {
-            binding.groupTagsTextView.visibility = View.VISIBLE
-            val formattedTags = group.tags.split(",").joinToString(", ") { it.trim() }
-            binding.groupTagsTextView.text = getString(R.string.group_tags, formattedTags)
-        } else {
-            binding.groupTagsTextView.visibility = View.GONE
-        }
-
-        group.groupPicture?.let {
-            val file = File(it)
+        group.profilePicturePath?.let { path ->
+            val file = File(path)
             if (file.exists()) {
                 binding.groupImageView.load(file)
             } else {
@@ -170,9 +192,12 @@ class GroupFragment : Fragment() {
             }
         } ?: binding.groupImageView.setImageResource(R.drawable.default_group_image)
 
-        val toolbar =
-            requireActivity().findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
-        toolbar?.title = "Group: ${group.name}"
+        loadGroupMembers(group.members)
+    }
+
+    private fun navigateToCreateEvent() {
+        val bundle = bundleOf("groupId" to groupId)
+        findNavController().navigate(R.id.action_groupFragment_to_createEventFragment, bundle)
     }
 
     private fun setupMenu() {
@@ -180,145 +205,163 @@ class GroupFragment : Fragment() {
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.group_menu, menu)
-                menu.findItem(R.id.action_edit_group)?.isVisible = isAdmin
-                menu.findItem(R.id.action_delete_group)?.isVisible = isAdmin
-                menu.findItem(R.id.action_leave_group)?.isVisible = true
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.action_edit_group -> {
-                        val bundle = Bundle().apply {
-                            putInt("groupId", groupId!!)
+                        if (isAdmin) {
+                            navigateToEditGroup()
+                        } else {
+                            Toast.makeText(requireContext(), "Only admins can edit this group.", Toast.LENGTH_SHORT).show()
                         }
-                        findNavController().navigate(
-                            R.id.action_groupFragment_to_editGroupFragment,
-                            bundle
-                        )
                         true
                     }
-
                     R.id.action_delete_group -> {
-                        showDeleteConfirmationDialog()
+                        if (isAdmin) {
+                            confirmDeleteGroup()
+                        } else {
+                            Toast.makeText(requireContext(), "Only admins can delete this group.", Toast.LENGTH_SHORT).show()
+                        }
                         true
                     }
-
                     R.id.action_leave_group -> {
-                        showLeaveConfirmationDialog()
+                        confirmLeaveGroup()
                         true
                     }
-
+                    R.id.action_invite_user -> {
+                        if (isAdmin) {
+                            showInviteDialog()
+                        } else {
+                            Toast.makeText(requireContext(), "Only admins can invite users.", Toast.LENGTH_SHORT).show()
+                        }
+                        true
+                    }
                     else -> false
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun showLeaveConfirmationDialog() {
+    private fun showInviteDialog() {
+        val editText = EditText(requireContext())
+        editText.hint = "Enter username"
+
         AlertDialog.Builder(requireContext())
-            .setTitle("Leave Group")
-            .setMessage("Are you sure you want to leave this group?")
-            .setPositiveButton("Leave") { _, _ -> leaveGroup() }
+            .setTitle("Invite User")
+            .setView(editText)
+            .setPositiveButton("Invite") { _, _ ->
+                val username = editText.text.toString().trim()
+                if (username.isNotEmpty()) {
+                    createInvitation(username)
+                } else {
+                    Toast.makeText(requireContext(), "Username cannot be empty", Toast.LENGTH_SHORT).show()
+                }
+            }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
-    private fun leaveGroup() {
+    private fun createInvitation(username: String) {
+        if (groupId == null) return
+
         lifecycleScope.launch(Dispatchers.IO) {
-            val currentUserId = getCurrentUserID()
-            val updatedMembers = currentGroup.getMemberList().filterNot { it == currentUserId }
-
-            if (currentUserId == currentGroup.adminId) {
-                withContext(Dispatchers.Main) {
-                    if (updatedMembers.isEmpty()) {
-                        showDeleteConfirmationDialog()
-                    } else {
-                        showAdminTransferDialog(updatedMembers)
-                    }
-                }
-            } else {
-                val updatedGroup = currentGroup.copy(members = updatedMembers.joinToString(","))
-                groupsRepository.updateGroup(updatedGroup)
-
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "You have left the group.", Toast.LENGTH_SHORT)
-                        .show()
-                    findNavController().navigateUp()
+            val response = invitationsRepository.createInvitation(groupId!!, username)
+            withContext(Dispatchers.Main) {
+                if (response.isSuccessful) {
+                    Toast.makeText(requireContext(), "Invite sent!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to invite user: ${response.message()}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
     }
 
-    private fun showAdminTransferDialog(otherMembers: List<Int>) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val memberNames = otherMembers.map { userId ->
-                usersRepository.getUserById(userId)?.username ?: "Unknown"
-            }
-
-            withContext(Dispatchers.Main) {
-                AlertDialog.Builder(requireContext())
-                    .setTitle("Select a new admin before leaving")
-                    .setItems(memberNames.toTypedArray()) { _, which ->
-                        val newAdminId = otherMembers[which]
-                        transferAdminAndLeave(newAdminId)
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
-            }
-        }
+    private fun navigateToEditGroup() {
+        if (groupId == null) return
+        val bundle = bundleOf("groupId" to groupId)
+        findNavController().navigate(R.id.action_groupFragment_to_editGroupFragment, bundle)
     }
 
-    private fun transferAdminAndLeave(newAdminId: Int) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val updatedMembers = currentGroup.getMemberList().filterNot { it == getCurrentUserID() }
-            val updatedGroup =
-                currentGroup.copy(adminId = newAdminId, members = updatedMembers.joinToString(","))
-
-            groupsRepository.updateGroup(updatedGroup)
-
-            withContext(Dispatchers.Main) {
-                Toast.makeText(
-                    requireContext(),
-                    "Admin rights transferred. You have left the group.",
-                    Toast.LENGTH_SHORT
-                ).show()
-                findNavController().navigateUp()
-            }
-        }
-    }
-
-    private fun showDeleteConfirmationDialog() {
+    private fun confirmDeleteGroup() {
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Group")
-            .setMessage("Are you sure you want to delete this group? This action cannot be undone.")
-            .setPositiveButton("Delete") { _, _ -> deleteGroup() }
-            .setNegativeButton("Cancel", null)
+            .setMessage("Are you sure you want to delete this group?")
+            .setPositiveButton("Yes") { _, _ -> deleteGroup() }
+            .setNegativeButton("No", null)
             .show()
     }
 
     private fun deleteGroup() {
+        if (groupId == null) return
         lifecycleScope.launch(Dispatchers.IO) {
-            groupsRepository.deleteGroup(currentGroup)
+            val response = groupsRepository.deleteGroupOnline(groupId!!)
             withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "Group deleted successfully", Toast.LENGTH_SHORT)
-                    .show()
-                findNavController().navigateUp()
+                if (response.isSuccessful) {
+                    Toast.makeText(requireContext(), "Group deleted!", Toast.LENGTH_SHORT).show()
+                    findNavController().navigateUp()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to delete group: ${response.message()}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
 
-    private fun navigateToCreateEvent() {
-        val bundle = Bundle().apply {
-            putInt("groupId", groupId ?: -1)
-        }
-        findNavController().navigate(R.id.createEventFragment, bundle)
+    private fun confirmLeaveGroup() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Leave Group")
+            .setMessage("Are you sure you want to leave this group?")
+            .setPositiveButton("Yes") { _, _ -> leaveGroup() }
+            .setNegativeButton("No", null)
+            .show()
     }
 
-    private fun onEventClicked(eventId: Int) {
-        val bundle = Bundle().apply {
-            putInt("eventId", eventId)
+    private fun leaveGroup() {
+        val userId = getCurrentUserID()
+        if (groupId == null || userId == -1L) return
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val response = groupsRepository.removeUserFromGroup(groupId!!, userId, userId.toString())
+            withContext(Dispatchers.Main) {
+                if (response.isSuccessful) {
+                    Toast.makeText(requireContext(), "You have left the group!", Toast.LENGTH_SHORT).show()
+                    findNavController().navigateUp()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to leave group: ${response.message()}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
         }
-        findNavController().navigate(R.id.eventFragment, bundle)
+    }
+
+    private fun loadGroupMembers(memberIds: List<Long>) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val memberList = mutableListOf<User>()
+            for (id in memberIds) {
+                val response = usersRepository.getUserById(id)
+                if (response.isSuccessful) {
+                    response.body()?.let { user ->
+                        memberList.add(user)
+                    }
+                } else {
+                    println("Failed to fetch user $id: ${response.message()}")
+                }
+            }
+
+            withContext(Dispatchers.Main) {
+                if (memberList.isNotEmpty()) {
+                    binding.membersRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+                    binding.membersRecyclerView.adapter = MembersAdapter(memberList)
+                } else {
+                    Toast.makeText(requireContext(), "No members to display", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {

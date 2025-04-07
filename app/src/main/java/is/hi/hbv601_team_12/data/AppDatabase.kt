@@ -4,13 +4,12 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters  
-import `is`.hi.hbv601_team_12.data.converters.DateTimeConverters  
-
+import androidx.room.TypeConverters
+import `is`.hi.hbv601_team_12.data.converters.DateTimeConverters
+import `is`.hi.hbv601_team_12.data.converters.GroupListConverters
 import `is`.hi.hbv601_team_12.data.daos.*
 import `is`.hi.hbv601_team_12.data.entities.*
 
-@TypeConverters(DateTimeConverters::class)  
 @Database(
     entities = [
         Comment::class,
@@ -22,8 +21,12 @@ import `is`.hi.hbv601_team_12.data.entities.*
         User::class,
         EventParticipant::class,
     ],
-    version = 14, // uppfarea til að resetta DB
+    version = 60, // uppfærð til að resetta DB
     exportSchema = false
+)
+@TypeConverters(
+    DateTimeConverters::class,
+    GroupListConverters::class
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun commentDao(): CommentDao

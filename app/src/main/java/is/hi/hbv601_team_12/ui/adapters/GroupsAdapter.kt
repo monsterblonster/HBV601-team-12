@@ -1,4 +1,4 @@
-package `is`.hi.hbv601_team_12.ui.profile
+package `is`.hi.hbv601_team_12.ui.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +10,7 @@ import `is`.hi.hbv601_team_12.data.entities.Group
 
 class GroupsAdapter(
     private val groups: List<Group>,
-    private val userId: Int,
+    private val userId: Long,
     private val onGroupClick: (String) -> Unit
 ) : RecyclerView.Adapter<GroupsAdapter.GroupViewHolder>() {
 
@@ -32,9 +32,14 @@ class GroupsAdapter(
         private val groupNameTextView: TextView = itemView.findViewById(R.id.groupNameTextView)
         private val adminStatusTextView: TextView = itemView.findViewById(R.id.adminStatusTextView)
 
-        fun bind(group: Group, userId: Int) {
-            groupNameTextView.text = group.name
-            adminStatusTextView.visibility = if (group.adminId == userId) View.VISIBLE else View.GONE
+        fun bind(group: Group, userId: Long) {
+            groupNameTextView.text = group.groupName
+
+            adminStatusTextView.visibility = if (group.adminId == userId) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
 
             itemView.setOnClickListener {
                 onGroupClick(group.id.toString())

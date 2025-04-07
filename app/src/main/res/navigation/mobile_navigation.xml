@@ -42,6 +42,9 @@
         <action
             android:id="@+id/action_profileFragment_to_groupFragment"
             app:destination="@id/GroupFragment"/>
+        <action
+            android:id="@+id/action_profileFragment_to_eventFragment"
+            app:destination="@id/eventFragment" />
     </fragment>
 
     <fragment
@@ -75,7 +78,7 @@
 
     <fragment
         android:id="@+id/createGroupFragment"
-        android:name="is.hi.hbv601_team_12.ui.profile.CreateGroupFragment"
+        android:name="is.hi.hbv601_team_12.ui.group.CreateGroupFragment"
         android:label="Create Group"
         tools:layout="@layout/fragment_create_group">
 
@@ -90,13 +93,14 @@
         android:label="Edit Group"
         tools:layout="@layout/fragment_edit_group"/>
 
+
     <fragment
     android:id="@+id/createEventFragment"
     android:name="is.hi.hbv601_team_12.ui.event.CreateEventFragment"
     tools:layout="@layout/fragment_create_event">
     <argument
         android:name="groupId"
-        app:argType="integer" />
+        app:argType="long" />
   </fragment>
 
     <fragment
@@ -105,10 +109,13 @@
         tools:layout="@layout/fragment_event">
         <argument
             android:name="eventId"
-            app:argType="integer" />
+            app:argType="long" />
         <action
             android:id="@+id/action_eventFragment_to_editEventFragment"
             app:destination="@id/editEventFragment" />
+        <action
+            android:id="@+id/action_eventFragment_to_eventCommentsFragment"
+            app:destination="@id/EventCommentsFragment" />
     </fragment>
 
     <fragment
@@ -117,7 +124,7 @@
         tools:layout="@layout/fragment_create_event">
         <argument
             android:name="eventId"
-            app:argType="integer" />
+            app:argType="long" />
     </fragment>
   <fragment
         android:id="@+id/GroupFragment"
@@ -130,6 +137,24 @@
         <action
             android:id="@+id/action_groupFragment_to_editGroupFragment"
             app:destination="@id/editGroupFragment"/>
+      <action
+          android:id="@+id/action_groupFragment_to_eventFragment"
+          app:destination="@id/eventFragment" />
 
+      <action
+          android:id="@+id/action_groupFragment_to_createEventFragment"
+          app:destination="@id/createEventFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/EventCommentsFragment"
+        android:name="is.hi.hbv601_team_12.ui.event.EventCommentsFragment"
+        android:label="Event Comments"
+        tools:layout="@layout/fragment_event_comments">
+        <argument
+            android:name="eventId"
+            app:argType="long" />
+    </fragment>
+
+
 </navigation>

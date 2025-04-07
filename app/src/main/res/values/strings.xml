@@ -28,6 +28,7 @@
     <string name="create_group">Create Group</string>
     <string name="no_groups_message">You are not a member of any groups.</string>
     <string name="invite_info">Invite ID: %1$d / Group: %2$d</string>
+    <string name="member_avatar_desc">Member Photo</string>
 
 
 
@@ -55,7 +56,7 @@
     <string name="change_group_picture">Change Group Picture</string>
     <string name="your_invites">Your Invites</string>
     <string name="view_invites">View Invites</string>
-    <string name="no_events_found">No events found.</string>
+    <string name="no_events_found">No upcoming events</string>
     <string name="create_event">Create Event</string>
     <string name="events">Events</string>
     <string name="invite_user">Invite User</string>
@@ -87,6 +88,7 @@
     <string name="duration">Duration</string>
     <string name="location">Location</string>
     <string name="join_event">Join Event</string>
+
 
 
 </resources>

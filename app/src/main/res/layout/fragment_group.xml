@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- Group Header Section -->
     <ImageView
         android:id="@+id/groupImageView"
         android:layout_width="120dp"
@@ -40,75 +41,107 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/groupNameTextView" />
 
+    <!-- Tags Section (now visible by default) -->
     <TextView
         android:id="@+id/groupTagsTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:textSize="14sp"
-        android:textColor="@android:color/darker_gray"
-        android:visibility="gone"
+        android:textColor="@color/teal_700"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="4dp"
+        android:text="Tags: Sports, Social"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/groupDescriptionTextView" />
 
-    <TextView
-        android:id="@+id/membersHeaderTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/members"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/groupTagsTextView" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/membersRecyclerView"
-        android:layout_width="match_parent"
+    <!-- Two-column layout for events and members -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/contentArea"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/membersHeaderTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/eventsHeaderTextView"
-        app:layout_constraintHeight_default="percent"
-        app:layout_constraintHeight_percent="0.3"
-        tools:listitem="@layout/item_member" />
-
-    <TextView
-        android:id="@+id/eventsHeaderTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="@string/events"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/membersRecyclerView" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/eventsRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/eventsHeaderTextView"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/fabCreateEvent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHeight_default="percent"
-        app:layout_constraintHeight_percent="0.5"
-        tools:listitem="@layout/item_event" />
-
-    <TextView
-        android:id="@+id/noEventsTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/no_events_found"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/eventsHeaderTextView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/groupTagsTextView">
+
+        <!-- Events Section (Left - 70% width) -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/eventsSection"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/membersSection"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.7">
+
+            <TextView
+                android:id="@+id/eventsHeaderTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/events"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/eventsRecyclerView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/eventsHeaderTextView" />
+
+            <TextView
+                android:id="@+id/noEventsTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/no_events_found"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/eventsRecyclerView"
+                app:layout_constraintEnd_toEndOf="@id/eventsRecyclerView"
+                app:layout_constraintStart_toStartOf="@id/eventsRecyclerView"
+                app:layout_constraintTop_toTopOf="@id/eventsRecyclerView" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Members Section (Right - 30% width) -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/membersSection"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.3">
+
+            <TextView
+                android:id="@+id/membersHeaderTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/members"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/membersRecyclerView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/membersHeaderTextView" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabCreateEvent"
@@ -117,10 +150,9 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/create_event"
         android:src="@drawable/ic_add"
-        app:backgroundTint="@android:color/black"
+        app:backgroundTint="@color/purple_500"
         app:elevation="8dp"
         app:tint="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

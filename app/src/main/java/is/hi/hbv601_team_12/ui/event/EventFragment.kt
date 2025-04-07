@@ -52,6 +52,11 @@ class EventFragment : Fragment() {
         recyclerView.adapter = participantAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
+        val commentsButton = view.findViewById<Button>(R.id.viewCommentsButton)
+        commentsButton.setOnClickListener {
+            navigateToEventComments(eventId!!)
+        }
+
         if (eventId != null) {
             loadEventDetails(eventId!!)
         } else {
@@ -129,7 +134,7 @@ class EventFragment : Fragment() {
                 findViewById<TextView>(R.id.eventDescriptionTextView)?.text = event.description
 
                 val dateTimeFormatter = DateTimeFormatter.ofPattern("EEEE, MMM d 'at' h:mm a")
-                val formattedDateTime = event.startDateTime?.format(dateTimeFormatter) ?: "Time not set"
+                val formattedDateTime = event.date?.format(dateTimeFormatter) ?: "Time not set"
                 findViewById<TextView>(R.id.eventDateTimeTextView)?.text = formattedDateTime
 
                 val hours = event.durationMinutes / 60
@@ -142,6 +147,10 @@ class EventFragment : Fragment() {
                 findViewById<TextView>(R.id.eventDurationTextView)?.text = durationText
 
                 findViewById<TextView>(R.id.eventLocationTextView)?.text = event.location ?: "Location not specified"
+
+                val creationDateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy")
+                val formattedCreationDate = event.timeCreated?.format(creationDateFormatter) ?: "Date not set"
+                findViewById<TextView>(R.id.eventCreationDateTextView)?.text = "Created on $formattedCreationDate"
             }
         }
 
@@ -197,6 +206,13 @@ class EventFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun navigateToEventComments(eventId: Long) {
+        val bundle = Bundle().apply {
+            putLong("eventId", eventId)
+        }
+        findNavController().navigate(R.id.action_eventFragment_to_eventCommentsFragment, bundle)
     }
 
     private fun getCurrentUserId(): Long {

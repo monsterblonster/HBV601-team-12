@@ -63,7 +63,7 @@ interface EventsApiService {
     suspend fun postComment(
         @Path("eventId") eventId: Long,
         @Query("userId") userId: Long,
-        @Body comment: String
+        @Body comment: Comment
     ): Response<Comment>
 
     @PATCH("event/{eventId}/comment/{commentId}")

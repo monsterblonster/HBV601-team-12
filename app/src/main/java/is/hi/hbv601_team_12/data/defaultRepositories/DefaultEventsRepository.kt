@@ -139,7 +139,7 @@ class DefaultEventsRepository(  // aldrei notad!
         updatedEvent?.let { offlineRepo.updateEvent(it) }
     }
 
-    suspend fun postComment(eventId: Long, userId: Long, comment: String): Response<Comment> {
+    suspend fun postComment(eventId: Long, userId: Long, comment: Comment): Response<Comment> {
         return onlineRepo.postComment(eventId, userId, comment)
     }
 

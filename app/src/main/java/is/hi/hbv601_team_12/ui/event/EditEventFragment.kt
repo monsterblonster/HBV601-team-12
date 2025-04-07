@@ -68,8 +68,8 @@ class EditEventFragment : Fragment() {
                         view.findViewById<TextInputEditText>(R.id.eventDescriptionEditText).setText(it.description)
                         view.findViewById<TextInputEditText>(R.id.locationEditText).setText(it.location)
 
-                        startDateTime = it.startDateTime
-                        endDateTime = it.startDateTime?.plusMinutes(it.durationMinutes.toLong())
+                        startDateTime = it.date
+                        endDateTime = it.date?.plusMinutes(it.durationMinutes.toLong())
 
                         updateDateTimeFields()
                     }
@@ -111,7 +111,7 @@ class EditEventFragment : Fragment() {
         event?.let {
             it.name = eventName
             it.description = eventDescription
-            it.startDateTime = startDateTime as LocalDateTime
+            it.date = startDateTime as LocalDateTime
             it.durationMinutes = durationMinutes
             it.location = location
 

@@ -147,7 +147,7 @@ class OnlineEventsRepository {
         }
     }
 
-    suspend fun postComment(eventId: Long, userId: Long, comment: String): Response<Comment> {
+    suspend fun postComment(eventId: Long, userId: Long, comment: Comment): Response<Comment> {
         return try {
             val response = eventsApiService.postComment(eventId, userId, comment)
             if (!response.isSuccessful) {

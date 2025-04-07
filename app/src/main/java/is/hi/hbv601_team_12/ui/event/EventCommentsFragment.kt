@@ -74,19 +74,41 @@ class EventCommentsFragment : Fragment() {
         binding.postCommentButton.setOnClickListener {
             val commentText = binding.commentEditText.text.toString()
             if (commentText.isNotEmpty()) {
-                // Add new comment to list and update
-                val newComment = Comment(
-                    authorName = getCurrentUserName(),
-                    commentData = commentText,
-                    eventId = eventId!! // Replace with actual event ID
-                )
-                comments.add(newComment)
-                commentAdapter.notifyItemInserted(comments.size - 1)
-
-                binding.commentEditText.text.clear()
+                lifecycleScope.launch(Dispatchers.IO) {
+                    // Add new comment to list and update
+                    val newComment = Comment(
+                        authorName = getCurrentUserName(),
+                        commentData = commentText,
+                        eventId = eventId!!
+                    )
+                    try {
+                        val userId = getCurrentUserId()
+                        val response = eventsRepository.postComment(eventId!!, userId, newComment)
+                        if (!response.isSuccessful) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Error posting comment: ${response.errorBody()?.string()}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            return@launch
+                        }
+                        withContext(Dispatchers.Main) {
+                            comments.add(newComment)
+                            commentAdapter.notifyItemInserted(comments.size - 1)
+                        }
+                        binding.commentEditText.text.clear()
+                    } catch (e: IOException) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Error posting comment: ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
             }
         }
-
     }
 
     private fun fetchEventComments(eventId: Long) {

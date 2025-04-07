@@ -14,7 +14,7 @@ class EventsAdapter(
     private val onEventClick: (Long) -> Unit
 ) : RecyclerView.Adapter<EventsAdapter.EventViewHolder>() {
 
-    private val dateTimeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a")
+    private val dateTimeFormatter = DateTimeFormatter.ofPattern("EEEE, MMM d")
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -34,6 +34,7 @@ class EventsAdapter(
             private val eventNameTextView: TextView = itemView.findViewById(R.id.eventNameTextView)
             private val eventDescriptionTextView: TextView = itemView.findViewById(R.id.eventDescriptionTextView)
             private val eventDateTimeTextView: TextView = itemView.findViewById(R.id.eventDateTimeTextView)
+            private val eventDurationTextView: TextView = itemView.findViewById(R.id.eventDurationTextView)
             private val eventParticipantsTextView: TextView = itemView.findViewById(R.id.eventParticipantsTextView)
 
             fun bind(event: Event, formatter: DateTimeFormatter) {
@@ -45,6 +46,15 @@ class EventsAdapter(
 
                 // Handle nullable startDateTime
                 eventDateTimeTextView.text = event.date?.format(formatter) ?: "No date set"
+
+                val hours = event.durationMinutes / 60
+                val minutes = event.durationMinutes % 60
+                val durationText = when {
+                    hours > 0 && minutes > 0 -> "$hours hr ${minutes} min"
+                    hours > 0 -> "$hours hr"
+                    else -> "$minutes min"
+                }
+                eventDurationTextView.text = durationText
 
                 // Handle participants
                 val participantCount = event.going?.size ?: 0

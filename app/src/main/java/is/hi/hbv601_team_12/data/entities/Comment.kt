@@ -11,5 +11,5 @@ data class Comment (
     val commentData: String,
     val commentTime: LocalDateTime? = null,
     val eventId: Long,
-    val authorId: Long
+    val authorName: String
 )

@@ -14,9 +14,19 @@
         app:layout_constraintBottom_toTopOf="@id/commentEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:listitem="@layout/item_comment"
+        tools:listitem="@layout/item_comment"/>
 
-        />
+    <TextView
+        android:id="@+id/noCommentsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_comments_yet"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/commentsRecyclerView"
+        app:layout_constraintEnd_toEndOf="@+id/commentsRecyclerView"
+        app:layout_constraintStart_toStartOf="@+id/commentsRecyclerView"
+        app:layout_constraintTop_toTopOf="@+id/commentsRecyclerView" />
+
 
     <EditText
         android:id="@+id/commentEditText"

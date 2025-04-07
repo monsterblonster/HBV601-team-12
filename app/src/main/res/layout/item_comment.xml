@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    android:background="@color/teal_200"
     android:padding="8dp">
 
     <TextView
@@ -21,17 +23,30 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:alpha="0.7"
         app:layout_constraintStart_toEndOf="@id/comment_author"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="1 day ago" />
 
+    <View
+        android:id="@+id/comment_separator"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="4dp"
+        android:background="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/comment_date"/>
     <TextView
         android:id="@+id/comment_content"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/comment_author"
+
+        app:layout_constraintTop_toBottomOf="@id/comment_separator"
         tools:text="This is a comment" />
 </androidx.constraintlayout.widget.ConstraintLayout>

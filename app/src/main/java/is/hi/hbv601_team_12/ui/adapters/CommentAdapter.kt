@@ -5,19 +5,18 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import `is`.hi.hbv601_team_12.data.entities.Comment
 import `is`.hi.hbv601_team_12.databinding.ItemCommentBinding
+import java.time.format.DateTimeFormatter
 
 class CommentAdapter(
     private val comments: List<Comment>
 ) : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
-
     // View Holder
     class CommentViewHolder(private val binding: ItemCommentBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(comment: Comment) {
-            binding.commentAuthor.text = comment.authorId.toString()
+            binding.commentAuthor.text = comment.authorName
             binding.commentContent.text = comment.commentData
-            // You would format the timestamp to a readable date/time here if needed
-            // e.g., using a date/time formatting library
+            binding.commentDate.text = comment.commentTime?.format(DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a")) ?: "No date set"
         }
     }
 

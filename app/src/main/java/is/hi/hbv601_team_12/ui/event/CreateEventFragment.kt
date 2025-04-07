@@ -70,7 +70,6 @@ class CreateEventFragment : Fragment() {
                 Toast.makeText(requireContext(), "Please select start time!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            startDateTime = startDateTime!!.truncatedTo(ChronoUnit.MINUTES).withSecond(1)
 
             lifecycleScope.launch(Dispatchers.IO) {
 

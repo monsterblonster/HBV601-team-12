@@ -81,6 +81,7 @@
     <string name="post_comment">Comment</string>
     <string name="comments_list">Comment List</string>
     <string name="view_comments">View Comments</string>
+    <string name="no_comments_yet">No comments yet.</string>
 
 
 </resources>

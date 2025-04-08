@@ -15,6 +15,9 @@ data class User(
     var phoneNumber: String?,
     var address: String?,
     var profilePicturePath: String?,
+    var groups: List<Long> = emptyList(),
+    var ownedEvents: List<Long> = emptyList(),
+    var eventsGoing: List<Long> = emptyList(),
 ){
     @Ignore
     var confirmPassword: String? = null

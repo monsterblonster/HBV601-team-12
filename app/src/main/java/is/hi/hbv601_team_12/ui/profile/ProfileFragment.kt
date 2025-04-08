@@ -25,6 +25,8 @@ import `is`.hi.hbv601_team_12.data.repositories.*
 import `is`.hi.hbv601_team_12.databinding.FragmentProfileBinding
 import `is`.hi.hbv601_team_12.ui.adapters.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -179,8 +181,24 @@ class ProfileFragment : Fragment() {
                     Log.e("ProfileFragment", "pullUserGroupsOnline failed: ${response.message()}")
                 }
 
-                val userGroupsFlow = groupsRepository.getAllGroupsStream()
+                val userGroups = usersRepository.getUserByIdOffline(userId)?.groups
+                val groups: MutableList<Group> = mutableListOf()
+                userGroups?.forEach { groupId ->
+                    groupsRepository.getGroupStream(groupId).collect { group ->
+                        if (group != null) {
+                            groups.add(group)
+                        } else {
+                            Log.e("ProfileFragment", "Group with ID $groupId not found")
+                        }
+                    }
+                }
+
+
+                // change so it only fetches the user's groups
+                var userGroupsFlow: Flow<List<Group>> = flowOf(groups)
+
                 userGroupsFlow.collect { groups ->
+                    Log.d("ProfileFragment", "Received ${groups.size} groups from the database")
                     withContext(Dispatchers.Main) {
                         if (!isAdded || _binding == null) return@withContext
 
@@ -305,7 +323,7 @@ class ProfileFragment : Fragment() {
         sharedPref.edit { clear() }
 
         findNavController().navigate(R.id.action_profileFragment_to_loginFragment)
-        requireActivity().finish()
+        //requireActivity().finish()
     }
 
     private fun loadUserEvents(userId: Long) {

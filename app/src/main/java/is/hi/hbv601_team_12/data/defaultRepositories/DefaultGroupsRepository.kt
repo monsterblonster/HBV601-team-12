@@ -52,8 +52,8 @@ class DefaultGroupsRepository(
         return response
     }
 
-    override suspend fun removeUserFromGroup(groupId: Long, userId: Long, currentUser: String): Response<Group> {
-        val response = onlineRepo.removeUserFromGroup(groupId, userId, currentUser)
+    override suspend fun removeUserFromGroup(groupId: Long, userId: Long, currentUserId: Long): Response<Group> {
+        val response = onlineRepo.removeUserFromGroup(groupId, userId, currentUserId)
         if (response.isSuccessful) {
             response.body()?.let { updatedGroup ->
                 offlineRepo.updateGroup(updatedGroup)

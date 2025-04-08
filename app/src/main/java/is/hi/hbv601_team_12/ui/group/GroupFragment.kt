@@ -322,10 +322,12 @@ class GroupFragment : Fragment() {
 
     private fun leaveGroup() {
         val userId = getCurrentUserID()
+        println("Leaving group with groupId: $groupId and userId: $userId")
         if (groupId == null || userId == -1L) return
 
         lifecycleScope.launch(Dispatchers.IO) {
-            val response = groupsRepository.removeUserFromGroup(groupId!!, userId, userId.toString())
+            println("Leaving group with groupId: $groupId and userId: $userId")
+            val response = groupsRepository.removeUserFromGroup(groupId!!, userId, userId)
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Toast.makeText(requireContext(), "You have left the group!", Toast.LENGTH_SHORT).show()

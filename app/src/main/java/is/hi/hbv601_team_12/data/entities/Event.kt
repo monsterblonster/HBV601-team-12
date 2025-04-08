@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 import java.time.LocalDateTime
 
 // Changed entity properties to match the database columns on remote repo
-@Entity(tableName = "events",)
+@Entity(tableName = "events")
 data class Event(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

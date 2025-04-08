@@ -63,5 +63,10 @@ interface UserApiService {
         @Path("id") userId: Long
     ): Response<BasicResponse>
 
+    @DELETE("user/{id}/groups/{id2}")
+    suspend fun removeGroup(
+        @Path("id") userId: Long,
+        @Path("id2") groupId: Long
+    ): Response<User>
 
 }

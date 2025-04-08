@@ -327,7 +327,7 @@ class GroupFragment : Fragment() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             println("Leaving group with groupId: $groupId and userId: $userId")
-            val response = groupsRepository.removeUserFromGroup(groupId!!, userId, userId)
+            val response = usersRepository.removeGroup(userId, groupId!!)
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Toast.makeText(requireContext(), "You have left the group!", Toast.LENGTH_SHORT).show()

@@ -56,4 +56,8 @@ class DefaultUsersRepository(
     override suspend fun getUserByUsername(username: String): User? {
         return offlineRepo.getUserByUsername(username)
     }
+
+    override suspend fun removeGroup(userId: Long, groupId: Long): Response<User> {
+        return onlineRepo.removeGroup(userId, groupId)
+    }
 }

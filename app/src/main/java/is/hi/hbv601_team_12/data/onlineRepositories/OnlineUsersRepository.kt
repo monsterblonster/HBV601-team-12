@@ -103,7 +103,10 @@ class OnlineUsersRepository(
         }
     }
 
-    suspend fun uploadProfilePicture(userId: Long, imagePart: MultipartBody.Part): Response<ImageUploadResponse> {
+    suspend fun uploadProfilePicture(
+        userId: Long,
+        imagePart: MultipartBody.Part
+    ): Response<ImageUploadResponse> {
         return try {
             val response = RetrofitClient.userApiService.uploadProfilePicture(userId, imagePart)
             if (response.isSuccessful) {
@@ -132,13 +135,13 @@ class OnlineUsersRepository(
                 println("Notifications Failed: ${response.errorBody()?.string()}")
             }
             response
-            } catch (e: IOException){
-                println("Network Error: ${e.message}")
-                Response.error(
-                    500,
-                    "Network Error: ${e.message}".toResponseBody("text/plain".toMediaTypeOrNull())
-                )
-            }
+        } catch (e: IOException) {
+            println("Network Error: ${e.message}")
+            Response.error(
+                500,
+                "Network Error: ${e.message}".toResponseBody("text/plain".toMediaTypeOrNull())
+            )
+        }
     }
 
     suspend fun clearNotifications(userId: Long): Response<BasicResponse> {
@@ -152,13 +155,32 @@ class OnlineUsersRepository(
                 println("Clear Notifications Failed: ${response.errorBody()?.string()}")
             }
             response
-        } catch (e: IOException)
-        {
+        } catch (e: IOException) {
             println("Network Error: ${e.message}")
             Response.error(
                 500,
                 "Network Error: ${e.message}".toResponseBody("text/plain".toMediaTypeOrNull())
             )
+        }
+    }
+
+    suspend fun removeGroup(userId: Long, groupId: Long): Response<User> {
+        return try {
+            val response = RetrofitClient.userApiService.removeGroup(userId, groupId)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    println("Remove Group Success: $it")
+                }
+            } else {
+                println("Remove Group Failed: ${response.errorBody()?.string()}")
             }
+            response
+        } catch (e: IOException) {
+            println("Network Error: ${e.message}")
+            Response.error(
+                500,
+                "Network Error: ${e.message}".toResponseBody("text/plain".toMediaTypeOrNull())
+            )
+        }
     }
 }

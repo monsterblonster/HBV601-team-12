@@ -64,70 +64,47 @@ class MainActivity : AppCompatActivity() {
                         if (response.isSuccessful) {
                             val user = response.body()
                             if (user != null) {
-                                val navView = binding.navView
-                                val menu = navView.menu
-                                val groupItem = menu.findItem(R.id.nav_groups)
-                                val groupSubMenu = groupItem.subMenu
-
-                                var userGroups: List<Group> = emptyList()  // Declare outside coroutine
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    defaultUsersRepository.cacheUser(user)
+                                }
 
                                 lifecycleScope.launch(Dispatchers.IO) {
-                                    val allGroups = db.groupDao().getAllGroupsOnce()
-                                    userGroups = allGroups.filter { group -> user.id in group.members }
-
-                                    withContext(Dispatchers.Main) {
-                                        groupSubMenu?.clear()
-                                        for (group in userGroups) {
-                                            groupSubMenu?.add(Menu.NONE, group.id.toInt(), Menu.NONE, group.groupName)
-                                        }
-
-                                        navView.setNavigationItemSelectedListener { item ->
-                                            val matchedGroup = userGroups.find { it.id.toInt() == item.itemId }
-
-                                            if (matchedGroup != null) {
-                                                val bundle = Bundle().apply {
-                                                    putString("groupId", matchedGroup.id.toString())
-                                                }
-                                                val navController = supportFragmentManager
-                                                    .findFragmentById(R.id.nav_host_fragment_content_main)
-                                                    ?.findNavController()
-
-                                                navController?.navigate(R.id.GroupFragment, bundle)
-                                                binding.drawerLayout.closeDrawers()
-                                                true
-                                            } else {
-                                                NavigationUI.onNavDestinationSelected(item, navController!!)
-                                                binding.drawerLayout.closeDrawers()
-                                                true
-                                            }
+                                    db.groupDao().getAllGroups().collect { allGroups ->
+                                        val userGroups = allGroups.filter { group -> user.id in group.members }
+                                        withContext(Dispatchers.Main) {
+                                            updateSidebarGroups(userGroups)
                                         }
                                     }
                                 }
 
                                 navView.setNavigationItemSelectedListener { item ->
-                                    val matchedGroup = userGroups.find { it.id.toInt() == item.itemId }
+                                    val groupId = item.itemId.toLong()
 
-                                    if (matchedGroup != null) {
-                                        val bundle = Bundle().apply {
-                                            putString("groupId", matchedGroup.id.toString())  // pass ID as string
+                                    lifecycleScope.launch(Dispatchers.IO) {
+                                        val matchedGroup = db.groupDao().getGroup(groupId)
+
+                                        withContext(Dispatchers.Main) {
+                                            if (matchedGroup != null) {
+                                                val bundle = Bundle().apply {
+                                                    putString("groupId", matchedGroup.id.toString())
+                                                }
+                                                supportFragmentManager
+                                                    .findFragmentById(R.id.nav_host_fragment_content_main)
+                                                    ?.findNavController()
+                                                    ?.navigate(R.id.GroupFragment, bundle)
+
+                                                binding.drawerLayout.closeDrawers()
+                                            } else {
+                                                NavigationUI.onNavDestinationSelected(item, navController)
+                                                binding.drawerLayout.closeDrawers()
+                                            }
                                         }
-                                        val navController = supportFragmentManager
-                                            .findFragmentById(R.id.nav_host_fragment_content_main)
-                                            ?.findNavController()
-
-                                        navController?.navigate(R.id.GroupFragment, bundle)
-                                        binding.drawerLayout.closeDrawers()
-                                        true
-                                    } else {
-                                        NavigationUI.onNavDestinationSelected(item, navController!!)
-                                        binding.drawerLayout.closeDrawers()
-                                        true
                                     }
+
+                                    true
                                 }
 
-                                lifecycleScope.launch(Dispatchers.IO) {
-                                    defaultUsersRepository.cacheUser(user)
-                                }
+
                                 if (navController.currentDestination?.id != R.id.profileFragment) {
                                     navController.navigate(R.id.profileFragment)
                                 }
@@ -136,22 +113,14 @@ class MainActivity : AppCompatActivity() {
                             }
                         } else {
                             when (response.code()) {
-                                401, 404 -> {
-                                    handleFailedLogin(navController, sharedPref)
-                                }
-                                else -> {
-                                    attemptOfflineLogin(navController, sharedPref, userId)
-                                }
+                                401, 404 -> handleFailedLogin(navController, sharedPref)
+                                else -> attemptOfflineLogin(navController, sharedPref, userId)
                             }
                         }
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Network Error: ${e.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(this@MainActivity, "Network Error: ${e.message}", Toast.LENGTH_SHORT).show()
                         attemptOfflineLogin(navController, sharedPref, userId)
                     }
                 }
@@ -175,6 +144,18 @@ class MainActivity : AppCompatActivity() {
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
                 supportActionBar?.setDisplayHomeAsUpEnabled(true)
             }
+        }
+    }
+
+    private fun updateSidebarGroups(userGroups: List<Group>) {
+        val navView = binding.navView
+        val menu = navView.menu
+        val groupItem = menu.findItem(R.id.nav_groups)
+        val groupSubMenu = groupItem.subMenu
+        groupSubMenu?.clear()
+
+        for (group in userGroups) {
+            groupSubMenu?.add(Menu.NONE, group.id.toInt(), Menu.NONE, group.groupName)
         }
     }
 
@@ -208,6 +189,8 @@ class MainActivity : AppCompatActivity() {
         }
         navController.navigate(R.id.loginFragment)
     }
+
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)

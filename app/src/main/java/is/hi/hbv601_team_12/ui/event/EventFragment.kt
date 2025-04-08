@@ -87,31 +87,35 @@ class EventFragment : Fragment() {
         }
     }
 
+    // To load invited users along with other participants
     private fun loadParticipants(eventId: Long) {
         lifecycleScope.launch(Dispatchers.IO) {
-            // Each call returns List<User>
             val goingResponse = eventsRepository.getGoingUsers(eventId)
             val maybeResponse = eventsRepository.getMaybeUsers(eventId)
             val cantGoResponse = eventsRepository.getCantGoUsers(eventId)
+            val invitedResponse = eventsRepository.getInvitedUsers(eventId) // New
 
-            if (goingResponse.isSuccessful && maybeResponse.isSuccessful && cantGoResponse.isSuccessful) {
+            if (goingResponse.isSuccessful && maybeResponse.isSuccessful &&
+                cantGoResponse.isSuccessful && invitedResponse.isSuccessful)
+            {
+
                 val goingUsers = goingResponse.body().orEmpty()
                 val maybeUsers = maybeResponse.body().orEmpty()
                 val cantGoUsers = cantGoResponse.body().orEmpty()
+                val invitedUsers = invitedResponse.body().orEmpty() // New
 
-                // Combine them:
-                // We get a distinct list of all Users from going + maybe + cantGo
-                val allUsers = (goingUsers + maybeUsers + cantGoUsers).distinctBy { it.id }
+                val allUsers =
+                    (goingUsers + maybeUsers + cantGoUsers + invitedUsers).distinctBy { it.id }
 
                 val participants = mutableListOf<ParticipantWithStatus>()
 
-                // Determine each user's status
                 allUsers.forEach { user ->
-                    val status = when (user) {
-                        in goingUsers -> ParticipantStatus.GOING
-                        in maybeUsers -> ParticipantStatus.MAYBE
-                        in cantGoUsers -> ParticipantStatus.DECLINED
-                        else -> ParticipantStatus.INVITED
+                    val status = when {
+                        user in goingUsers -> ParticipantStatus.GOING
+                        user in maybeUsers -> ParticipantStatus.MAYBE
+                        user in cantGoUsers -> ParticipantStatus.DECLINED
+                        user in invitedUsers -> ParticipantStatus.INVITED // New
+                        else -> ParticipantStatus.INVITED // Default if somehow not in any list
                     }
                     participants.add(ParticipantWithStatus(user, status))
                 }
@@ -121,12 +125,15 @@ class EventFragment : Fragment() {
                 }
             } else {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Failed to load participants!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to load participants!",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
     }
-
 
         private fun updateUI(event: Event) {
             view?.apply {

@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
+import `is`.hi.hbv601_team_12.MainActivity
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.defaultRepositories.*
@@ -86,6 +87,7 @@ class ProfileFragment : Fragment() {
 
         loadUserProfile()
         setupMenu()
+
     }
 
     private fun setupMenu() {
@@ -168,6 +170,8 @@ class ProfileFragment : Fragment() {
                 }
             }
         }
+        (requireActivity() as? MainActivity)?.recreate() // loada groups strax eftir
+
     }
 
     private fun declineInvite(invite: Invitation) {

@@ -16,6 +16,7 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import `is`.hi.hbv601_team_12.MainActivity
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.entities.Group
@@ -174,6 +175,8 @@ class CreateGroupFragment : Fragment() {
             allowUserInvites = allowInvites
         )
 
+
+
         lifecycleScope.launch(Dispatchers.IO) {
             val response = groupsRepository.createGroup(newGroup, adminUsername)
             withContext(Dispatchers.Main) {
@@ -182,6 +185,7 @@ class CreateGroupFragment : Fragment() {
 
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "Group Created Successfully!", Toast.LENGTH_SHORT).show()
+                        (requireActivity() as? MainActivity)?.recreate() // svo eg þarf ekki að rrestarta til að sja groups
                         findNavController().navigate(R.id.action_createGroupFragment_to_profileFragment)
                     }
                 } else {

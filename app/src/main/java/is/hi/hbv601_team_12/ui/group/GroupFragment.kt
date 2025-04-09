@@ -232,6 +232,8 @@ class GroupFragment : Fragment() {
                     R.id.action_invite_user -> {
                         if (isAdmin) {
                             showInviteDialog()
+                        } else if (currentGroup.allowUserInvites) {
+                            showInviteDialog()
                         } else {
                             Toast.makeText(requireContext(), "Only admins can invite users.", Toast.LENGTH_SHORT).show()
                         }

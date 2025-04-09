@@ -1,6 +1,8 @@
 package `is`.hi.hbv601_team_12.ui.adapters
 
+import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -16,6 +18,7 @@ class ParticipantAdapter : ListAdapter<ParticipantWithStatus, ParticipantAdapter
     ParticipantDiffCallback()
 ) {
     private var onStatusChangeListener: ((Long, ParticipantStatus) -> Unit)? = null
+    private var currentUserId: Long = -1L
 
     fun setOnStatusChangeListener(listener: (Long, ParticipantStatus) -> Unit) {
         onStatusChangeListener = listener
@@ -27,7 +30,9 @@ class ParticipantAdapter : ListAdapter<ParticipantWithStatus, ParticipantAdapter
             parent,
             false
         )
-        return ParticipantViewHolder(binding, onStatusChangeListener)
+        val sharedPref = parent.context.getSharedPreferences("VibeVaultPrefs", Context.MODE_PRIVATE)
+        currentUserId = sharedPref.getLong("loggedInUserId", -1L)
+        return ParticipantViewHolder(binding, onStatusChangeListener, currentUserId)
     }
 
     override fun onBindViewHolder(holder: ParticipantViewHolder, position: Int) {
@@ -36,7 +41,8 @@ class ParticipantAdapter : ListAdapter<ParticipantWithStatus, ParticipantAdapter
 
     class ParticipantViewHolder(
         private val binding: ItemParticipantBinding,
-        private val statusChangeListener: ((Long, ParticipantStatus) -> Unit)?
+        private val statusChangeListener: ((Long, ParticipantStatus) -> Unit)?,
+        private val currentUserId: Long
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(participant: ParticipantWithStatus) {
@@ -53,19 +59,31 @@ class ParticipantAdapter : ListAdapter<ParticipantWithStatus, ParticipantAdapter
                 } ?: run {
                     ivParticipantPicture.setImageResource(R.drawable.default_profile)
                 }
+                if (currentUserId == participant.user.id) {
+                    // Update button states based on current status
+                    updateButtonStates(participant.status)
 
-                // Update button states based on current status
-                updateButtonStates(participant.status)
-
-                // Set click listeners for buttons
-                btnGoing.setOnClickListener {
-                    statusChangeListener?.invoke(participant.user.id, ParticipantStatus.GOING)
+                    // Set click listeners for buttons
+                    btnGoing.setOnClickListener {
+                        statusChangeListener?.invoke(participant.user.id, ParticipantStatus.GOING)
+                    }
+                    btnMaybe.setOnClickListener {
+                        statusChangeListener?.invoke(participant.user.id, ParticipantStatus.MAYBE)
+                    }
+                    btnCantGo.setOnClickListener {
+                        statusChangeListener?.invoke(
+                            participant.user.id,
+                            ParticipantStatus.DECLINED
+                        )
+                    }
                 }
-                btnMaybe.setOnClickListener {
-                    statusChangeListener?.invoke(participant.user.id, ParticipantStatus.MAYBE)
-                }
-                btnCantGo.setOnClickListener {
-                    statusChangeListener?.invoke(participant.user.id, ParticipantStatus.DECLINED)
+                else {
+                    // Hide buttons for non-current users
+                    btnGoing.visibility = View.GONE
+                    btnMaybe.visibility = View.GONE
+                    btnCantGo.visibility = View.GONE
+                    userStatus.visibility = View.VISIBLE
+                    userStatus.text = participant.status.toString()
                 }
             }
         }

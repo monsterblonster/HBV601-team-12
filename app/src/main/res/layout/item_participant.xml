@@ -43,6 +43,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_marginStart="8dp"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -79,5 +80,15 @@
             android:paddingLeft="8dp"
             android:paddingRight="8dp"/>
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/userStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -254,10 +254,10 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.main, menu)
-        return true
-    }
+  //  override fun onCreateOptionsMenu(menu: Menu): Boolean {
+  //      menuInflater.inflate(R.menu.main, menu)
+  //      return true
+  //  }
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)

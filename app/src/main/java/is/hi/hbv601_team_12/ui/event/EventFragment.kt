@@ -3,6 +3,7 @@ package `is`.hi.hbv601_team_12.ui.event
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
@@ -13,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import `is`.hi.hbv601_team_12.R
@@ -56,7 +58,13 @@ class EventFragment : Fragment() {
         }
 
         recyclerView.adapter = participantAdapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.layoutManager = GridLayoutManager(context, 2).apply {
+            spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                override fun getSpanSize(position: Int): Int {
+                    return 1
+                }
+            }
+        }
 
 
         val commentsButton = view.findViewById<Button>(R.id.viewCommentsButton)
@@ -232,7 +240,12 @@ class EventFragment : Fragment() {
                 """.trimIndent())
 
                     withContext(Dispatchers.Main) {
-                        participantAdapter.submitList(participants)
+                        if (participants.isEmpty()) {
+                            Log.d("Participants", "Participant list is empty!")
+                        } else {
+                            Log.d("Participants", "Submitting ${participants.size} users to adapter")
+                            participantAdapter.submitList(participants)
+                        }
                     }
                 } else {
                     // Handle error responses

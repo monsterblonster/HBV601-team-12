@@ -2,10 +2,13 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp">
+    android:padding="12dp"
+    android:background="?attr/selectableItemBackground">
 
+    <!-- Profile Picture -->
     <ImageView
         android:id="@+id/ivParticipantPicture"
         android:layout_width="48dp"
@@ -16,29 +19,63 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
+    <!-- Participant Name -->
     <TextView
         android:id="@+id/tvParticipantName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:ellipsize="end"
+        android:maxLines="1"
+        tools:text="John Doe"
         app:layout_constraintStart_toEndOf="@id/ivParticipantPicture"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/tvParticipantStatus"
-        app:layout_constraintBottom_toTopOf="@id/tvParticipantStatus" />
+        app:layout_constraintEnd_toStartOf="@id/buttonGroup" />
 
-    <TextView
-        android:id="@+id/tvParticipantStatus"
+    <!-- Status Buttons -->
+    <LinearLayout
+        android:id="@+id/buttonGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textSize="14sp"
-        android:textColor="@android:color/black"
-        app:layout_constraintStart_toEndOf="@id/ivParticipantPicture"
-        app:layout_constraintTop_toBottomOf="@id/tvParticipantName"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:orientation="horizontal"
+        android:layout_marginStart="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <Button
+            android:id="@+id/btnGoing"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="@string/status_going"
+            android:textSize="12sp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:layout_marginEnd="4dp"/>
+
+        <Button
+            android:id="@+id/btnMaybe"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="@string/status_maybe"
+            android:textSize="12sp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:layout_marginEnd="4dp"/>
+
+        <Button
+            android:id="@+id/btnCantGo"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="@string/status_declined"
+            android:textSize="12sp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"/>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

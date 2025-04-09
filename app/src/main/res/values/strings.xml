@@ -90,5 +90,10 @@
     <string name="join_event">Join Event</string>
 
 
+    <string name="status_going">GOING</string>
+    <string name="status_maybe">MAYBE</string>
+    <string name="status_declined">CAN\'T GO</string>
+    <string name="status_invited">INVITED</string>
+
 
 </resources>

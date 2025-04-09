@@ -22,6 +22,7 @@ import `is`.hi.hbv601_team_12.data.onlineRepositories.*
 import `is`.hi.hbv601_team_12.ui.adapters.ParticipantAdapter
 import `is`.hi.hbv601_team_12.ui.adapters.ParticipantWithStatus
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.format.DateTimeFormatter
@@ -48,9 +49,15 @@ class EventFragment : Fragment() {
         eventId = arguments?.getLong("eventId")
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.participantsRecyclerView)
-        participantAdapter = ParticipantAdapter()
+        participantAdapter = ParticipantAdapter().apply {
+            setOnStatusChangeListener { userId, status ->
+                updateParticipationStatus(userId, status)
+            }
+        }
+
         recyclerView.adapter = participantAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
 
         val commentsButton = view.findViewById<Button>(R.id.viewCommentsButton)
         commentsButton.setOnClickListener {
@@ -87,55 +94,7 @@ class EventFragment : Fragment() {
         }
     }
 
-    // To load invited users along with other participants
-    private fun loadParticipants(eventId: Long) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val goingResponse = eventsRepository.getGoingUsers(eventId)
-            val maybeResponse = eventsRepository.getMaybeUsers(eventId)
-            val cantGoResponse = eventsRepository.getCantGoUsers(eventId)
-            val invitedResponse = eventsRepository.getInvitedUsers(eventId) // New
-
-            if (goingResponse.isSuccessful && maybeResponse.isSuccessful &&
-                cantGoResponse.isSuccessful && invitedResponse.isSuccessful)
-            {
-
-                val goingUsers = goingResponse.body().orEmpty()
-                val maybeUsers = maybeResponse.body().orEmpty()
-                val cantGoUsers = cantGoResponse.body().orEmpty()
-                val invitedUsers = invitedResponse.body().orEmpty() // New
-
-                val allUsers =
-                    (goingUsers + maybeUsers + cantGoUsers + invitedUsers).distinctBy { it.id }
-
-                val participants = mutableListOf<ParticipantWithStatus>()
-
-                allUsers.forEach { user ->
-                    val status = when {
-                        user in goingUsers -> ParticipantStatus.GOING
-                        user in maybeUsers -> ParticipantStatus.MAYBE
-                        user in cantGoUsers -> ParticipantStatus.DECLINED
-                        user in invitedUsers -> ParticipantStatus.INVITED // New
-                        else -> ParticipantStatus.INVITED // Default if somehow not in any list
-                    }
-                    participants.add(ParticipantWithStatus(user, status))
-                }
-
-                withContext(Dispatchers.Main) {
-                    participantAdapter.submitList(participants)
-                }
-            } else {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Failed to load participants!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        }
-    }
-
-        private fun updateUI(event: Event) {
+    private fun updateUI(event: Event) {
             view?.apply {
                 findViewById<TextView>(R.id.eventNameTextView)?.text = event.name
                 findViewById<TextView>(R.id.eventDescriptionTextView)?.text = event.description
@@ -160,9 +119,6 @@ class EventFragment : Fragment() {
                 findViewById<TextView>(R.id.eventCreationDateTextView)?.text = "Created on $formattedCreationDate"
             }
         }
-
-
-
     private fun setupMenu() {
         if (creatorId != getCurrentUserId().toLong()) return
 
@@ -190,7 +146,6 @@ class EventFragment : Fragment() {
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
-
     private fun showDeleteConfirmationDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Event")
@@ -226,5 +181,122 @@ class EventFragment : Fragment() {
         val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Context.MODE_PRIVATE)
         return sharedPref.getLong("loggedInUserId", -1L)
     }
+
+    private fun loadParticipants(eventId: Long) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Fetch all participant lists in parallel
+                val goingDeferred = async { eventsRepository.getGoingUsers(eventId) }
+                val maybeDeferred = async { eventsRepository.getMaybeUsers(eventId) }
+                val cantGoDeferred = async { eventsRepository.getCantGoUsers(eventId) }
+                val invitedDeferred = async { eventsRepository.getInvitedUsers(eventId) }
+
+                val goingResponse = goingDeferred.await()
+                val maybeResponse = maybeDeferred.await()
+                val cantGoResponse = cantGoDeferred.await()
+                val invitedResponse = invitedDeferred.await()
+
+                // Debug logging
+                println("""
+                API Responses:
+                Going: ${goingResponse.body()?.size} users
+                Maybe: ${maybeResponse.body()?.size} users
+                Can't Go: ${cantGoResponse.body()?.size} users
+                Invited: ${invitedResponse.body()?.size} users
+            """.trimIndent())
+
+                if (goingResponse.isSuccessful && maybeResponse.isSuccessful &&
+                    cantGoResponse.isSuccessful && invitedResponse.isSuccessful
+                ) {
+                    val goingUsers = goingResponse.body().orEmpty().toSet()
+                    val maybeUsers = maybeResponse.body().orEmpty().toSet()
+                    val cantGoUsers = cantGoResponse.body().orEmpty().toSet()
+                    val invitedUsers = invitedResponse.body().orEmpty()
+                        .filterNot { user ->
+                            // Exclude users who are in other statuses
+                            user in goingUsers || user in maybeUsers || user in cantGoUsers
+                        }
+                        .toSet()
+
+                    val participants = mutableListOf<ParticipantWithStatus>().apply {
+                        addAll(goingUsers.map { ParticipantWithStatus(it, ParticipantStatus.GOING) })
+                        addAll(maybeUsers.map { ParticipantWithStatus(it, ParticipantStatus.MAYBE) })
+                        addAll(cantGoUsers.map { ParticipantWithStatus(it, ParticipantStatus.DECLINED) })
+                        addAll(invitedUsers.map { ParticipantWithStatus(it, ParticipantStatus.INVITED) })
+                    }
+
+                    // Debug logging
+                    println("""
+                    Final Participants:
+                    ${participants.groupBy { it.status }.mapValues { it.value.size }}
+                """.trimIndent())
+
+                    withContext(Dispatchers.Main) {
+                        participantAdapter.submitList(participants)
+                    }
+                } else {
+                    // Handle error responses
+                    val errorMsg = buildString {
+                        if (!goingResponse.isSuccessful) append("Going list failed. ")
+                        if (!maybeResponse.isSuccessful) append("Maybe list failed. ")
+                        if (!cantGoResponse.isSuccessful) append("Can't Go list failed. ")
+                        if (!invitedResponse.isSuccessful) append("Invited list failed.")
+                    }
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Error loading participants: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+    private fun updateParticipationStatus(userId: Long, status: ParticipantStatus) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = when (status) {
+                    ParticipantStatus.GOING -> eventsRepository.addUserToGoing(eventId!!, userId)
+                    ParticipantStatus.MAYBE -> eventsRepository.addUserToMaybe(eventId!!, userId)
+                    ParticipantStatus.DECLINED -> eventsRepository.addUserToCantGo(eventId!!, userId)
+                    else -> return@launch
+                }
+
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        loadParticipants(eventId!!) // Refresh the list
+                        Toast.makeText(
+                            requireContext(),
+                            "Status updated to ${status.name}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "Failed to update status",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Error: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+
+
 
 }

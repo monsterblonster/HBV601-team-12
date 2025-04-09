@@ -8,4 +8,16 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="teal_100">#B2DFDB</color>
+
+    <!-- Status Background Colors -->
+    <color name="status_going_bg">#E8F5E9</color>
+    <color name="status_maybe_bg">#FFF8E1</color>
+    <color name="status_declined_bg">#FFEBEE</color>
+    <color name="status_invited_bg">#E3F2FD</color>
+
+    <!-- Status Text Colors -->
+    <color name="status_going_text">#2E7D32</color>
+    <color name="status_maybe_text">#F57F17</color>
+    <color name="status_declined_text">#C62828</color>
+    <color name="status_invited_text">#1565C0</color>
 </resources>

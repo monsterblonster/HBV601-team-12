@@ -54,7 +54,6 @@ class CreateGroupFragment : Fragment() {
 
         groupNameInput = view.findViewById(R.id.groupNameInput)
         groupDescriptionInput = view.findViewById(R.id.groupDescriptionInput)
-        groupTagsInput = view.findViewById(R.id.groupTagsInput)
         groupMaxMembersInput = view.findViewById(R.id.groupMaxMembersInput)
         createGroupButton = view.findViewById(R.id.createGroupButton)
         allowUserInvites = view.findViewById(R.id.switchAllowUserInvites)
@@ -142,7 +141,7 @@ class CreateGroupFragment : Fragment() {
     private fun createGroup() {
         val groupName = groupNameInput.text.toString().trim()
         val groupDescription = groupDescriptionInput.text.toString().trim()
-        val groupTags = groupTagsInput.text.toString().trim()
+        val groupTags = null
         val maxMembersText = groupMaxMembersInput.text.toString().trim()
         val allowInvites = allowUserInvites.isChecked
 
@@ -162,13 +161,11 @@ class CreateGroupFragment : Fragment() {
             return
         }
 
-        val tagsList = if (groupTags.isEmpty()) emptyList()
-        else groupTags.split(",").map { it.trim() }
 
         val newGroup = Group(
             groupName = groupName,
             description = groupDescription.ifEmpty { null },
-            tags = tagsList,
+            tags = emptyList(),
             maxMembers = maxMembers,
             adminId = adminId,
             profilePicturePath = groupPicturePath,

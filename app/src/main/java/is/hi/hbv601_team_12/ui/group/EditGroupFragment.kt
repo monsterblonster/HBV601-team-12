@@ -115,7 +115,6 @@ class EditGroupFragment : Fragment() {
     private fun populateFields(group: Group) {
         binding.etGroupName.setText(group.groupName)
         binding.etGroupDescription.setText(group.description ?: "")
-        binding.etGroupTags.setText(group.tags.joinToString(", "))
         binding.switchAllowUserInvites.isChecked = group.allowUserInvites
 
         if (!group.profilePicturePath.isNullOrEmpty()) {
@@ -211,7 +210,6 @@ class EditGroupFragment : Fragment() {
     private fun updateGroup() {
         val newName = binding.etGroupName.text.toString().trim()
         val newDescription = binding.etGroupDescription.text.toString().trim()
-        val newTags = binding.etGroupTags.text.toString().trim().split(",").map { it.trim() }
         val newAllowInvites = binding.switchAllowUserInvites.isChecked
 
         if (newName.isEmpty()) {
@@ -239,7 +237,7 @@ class EditGroupFragment : Fragment() {
                 groupName = newName,
                 description = newDescription.ifEmpty { null },
                 profilePicturePath = finalPictureUrl,
-                tags = newTags,
+                tags = emptyList(),
                 allowUserInvites = newAllowInvites
             )
 

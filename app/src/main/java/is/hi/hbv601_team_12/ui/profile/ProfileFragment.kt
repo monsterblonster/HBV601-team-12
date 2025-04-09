@@ -161,6 +161,7 @@ class ProfileFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Toast.makeText(requireContext(), "Invite accepted!", Toast.LENGTH_SHORT).show()
+                    (requireActivity() as? MainActivity)?.recreate() // svo eg þarf ekki að rrestarta til að sja groups
                     loadUserProfile()
                 } else {
                     Toast.makeText(requireContext(),
@@ -170,8 +171,6 @@ class ProfileFragment : Fragment() {
                 }
             }
         }
-        (requireActivity() as? MainActivity)?.recreate() // loada groups strax eftir
-
     }
 
     private fun declineInvite(invite: Invitation) {

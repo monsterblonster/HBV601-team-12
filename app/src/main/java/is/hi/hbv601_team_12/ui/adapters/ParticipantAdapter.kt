@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import coil.transform.CircleCropTransformation
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.entities.*
 import `is`.hi.hbv601_team_12.databinding.ItemParticipantBinding
@@ -47,6 +48,7 @@ class ParticipantAdapter : ListAdapter<ParticipantWithStatus, ParticipantAdapter
                         crossfade(true)
                         placeholder(R.drawable.default_profile)
                         error(R.drawable.default_profile)
+                        transformations(CircleCropTransformation())
                     }
                 } ?: run {
                     ivParticipantPicture.setImageResource(R.drawable.default_profile)

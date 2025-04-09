@@ -107,5 +107,4 @@ interface EventsApiService {
         @Path("userId") userId: Long
     ): Response<Unit>
 
-
 }

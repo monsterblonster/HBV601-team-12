@@ -59,6 +59,10 @@ interface EventsApiService {
     @GET("event/{id}/cantGoUsers")
     suspend fun getCantGoUsers(@Path("id") eventId: Long): Response<List<User>>
 
+    @GET("event/{id}/invitedUsers")
+    suspend fun getInvitedUsers(@Path("id") eventId: Long): Response<List<User>>
+
+
     @POST("event/{eventId}/comment")
     suspend fun postComment(
         @Path("eventId") eventId: Long,
@@ -95,5 +99,13 @@ interface EventsApiService {
 
     @GET("user/{id}/events")
     suspend fun getEventsForUser(@Path("id") userId: Long): Response<List<Event>>
+
+
+    @POST("event/{eventId}/invite/{userId}")
+    suspend fun inviteUserToEvent(
+        @Path("eventId") eventId: Long,
+        @Path("userId") userId: Long
+    ): Response<Unit>
+
 
 }

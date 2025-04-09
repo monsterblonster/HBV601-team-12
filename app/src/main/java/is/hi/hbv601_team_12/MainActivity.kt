@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
 
         val sharedPref = getSharedPreferences("VibeVaultPrefs", MODE_PRIVATE)
         //sharedPref.edit().clear().apply(); // long villa lausn
-        val isLoggedIn = sharedPref.getBoolean("isLoggedIn", false)
+        var isLoggedIn = sharedPref.getBoolean("isLoggedIn", false)
         this.userId = sharedPref.getLong("loggedInUserId", -1L)
 
         val db = AppDatabase.getDatabase(this)
@@ -156,46 +156,54 @@ class MainActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
-            while (isActive) {
-                if (ActivityCompat.checkSelfPermission(
+            if (ActivityCompat.checkSelfPermission(
                         this@MainActivity,
                         android.Manifest.permission.POST_NOTIFICATIONS
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        ActivityCompat.requestPermissions(
-                            this@MainActivity,
-                            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                            1
-                        )
-                    }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    ActivityCompat.requestPermissions(
+                        this@MainActivity,
+                        arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                        1
+                    )
                 }
-                try {
-                    val notificationResponse: Response<List<Notification>> = onlineRepo.getUserNotifications(userId)
+            }
+            while (isActive) {
+                isLoggedIn = sharedPref.getBoolean("isLoggedIn", false)
+                userId = sharedPref.getLong("loggedInUserId", -1L)
+                if (isLoggedIn && userId != -1L) {
+                    try {
+                        val notificationResponse: Response<List<Notification>> =
+                            onlineRepo.getUserNotifications(userId)
 
-                    if (notificationResponse.isSuccessful && notificationResponse.body() != null) {
-                        val notifications = notificationResponse.body()!!
-                        if (notifications.isNotEmpty()) {
-                            for (notification in notifications) {
-                                // send the notification to the user with the title and message from the response
-                                notificationHelper.sendNotification("Message from vibevault", notification.message)
+                        if (notificationResponse.isSuccessful && notificationResponse.body() != null) {
+                            val notifications = notificationResponse.body()!!
+
+                            if (notifications.isNotEmpty()) {
+                                for (notification in notifications) {
+                                    // send the notification to the user with the title and message from the response
+                                    notificationHelper.sendNotification(
+                                        "Message from vibevault",
+                                        notification.message
+                                    )
+                                }
+                                // clear the notifications from the server
+                                onlineRepo.clearNotifications(userId)
                             }
-                            // clear the notifications from the server
-                            onlineRepo.clearNotifications(userId)
                         }
-
-                    } else {
-                        // If the response is not successful, we will send a default message
-                        // notificationHelper.sendNotification("Notification from VibeVault", "There was a problem getting the notification")
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@MainActivity, "Notification Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                        // notificationHelper.sendNotification("Notification from VibeVault", "Error: ${e.message}")
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Notification Error: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            // notificationHelper.sendNotification("Notification from VibeVault", "Error: ${e.message}")
+                        }
                     }
                 }
-
-                delay(5000) // 5 seconds
+                delay(5000) // 5 seconds delay before checking again
             }
         }
     }

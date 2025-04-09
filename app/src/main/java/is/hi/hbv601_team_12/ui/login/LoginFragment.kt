@@ -150,6 +150,7 @@ class LoginFragment : Fragment() {
                         with(sharedPref.edit()) {
                             putLong("loggedInUserId", userId)
                             putBoolean("isLoggedIn", true)
+                            putString("loggedInUsername", username)
                             apply()
                         }
 

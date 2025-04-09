@@ -96,7 +96,7 @@ class CreateEventFragment : Fragment() {
                         Toast.makeText(requireContext(), "Time: ${startDateTime.toString()}", Toast.LENGTH_LONG).show()
                         val eventId = response.body()?.id ?: -1L
                         val bundle = Bundle().apply { putLong("eventId", eventId) }
-                        findNavController().navigate(R.id.eventFragment, bundle)
+                        findNavController().navigate(R.id.action_createEventFragment_to_eventFragment, bundle)
                     } else {
                         Toast.makeText(requireContext(), "Failed to create event: ${response.message()}", Toast.LENGTH_SHORT).show()
                     }

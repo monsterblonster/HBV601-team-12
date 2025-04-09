@@ -97,14 +97,21 @@
     <fragment
     android:id="@+id/createEventFragment"
     android:name="is.hi.hbv601_team_12.ui.event.CreateEventFragment"
+        android:label="Create Event"
     tools:layout="@layout/fragment_create_event">
     <argument
         android:name="groupId"
         app:argType="long" />
-  </fragment>
+        <action
+            android:id="@+id/action_createEventFragment_to_eventFragment"
+            app:popUpTo="@id/createEventFragment"
+            app:popUpToInclusive="true"
+            app:destination="@id/eventFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/eventFragment"
+        android:label="Event"
         android:name="is.hi.hbv601_team_12.ui.event.EventFragment"
         tools:layout="@layout/fragment_event">
         <argument
@@ -116,10 +123,14 @@
         <action
             android:id="@+id/action_eventFragment_to_eventCommentsFragment"
             app:destination="@id/EventCommentsFragment" />
+        <action
+            android:id="@+id/action_eventFragment_to_GroupFragment"
+            app:destination="@id/GroupFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/editEventFragment"
+        android:label="Edit Event"
         android:name="is.hi.hbv601_team_12.ui.event.EditEventFragment"
         tools:layout="@layout/fragment_create_event">
         <argument

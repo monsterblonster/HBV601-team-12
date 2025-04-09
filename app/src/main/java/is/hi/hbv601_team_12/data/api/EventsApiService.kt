@@ -63,7 +63,7 @@ interface EventsApiService {
     suspend fun postComment(
         @Path("eventId") eventId: Long,
         @Query("userId") userId: Long,
-        @Body comment: String
+        @Body comment: Comment
     ): Response<Comment>
 
     @PATCH("event/{eventId}/comment/{commentId}")
@@ -90,8 +90,8 @@ interface EventsApiService {
         @Path("commentId") commentId: Long
     ): Response<Comment>
 
-    @GET("group/{id}/events")
-    suspend fun getEventsByGroupId(@Path("id") groupId: Long): Response<List<Event>>
+    @GET("event/group/{groupId}")
+    suspend fun getEventsByGroupId(@Path("groupId") groupId: Long): Response<List<Event>>
 
     @GET("user/{id}/events")
     suspend fun getEventsForUser(@Path("id") userId: Long): Response<List<Event>>

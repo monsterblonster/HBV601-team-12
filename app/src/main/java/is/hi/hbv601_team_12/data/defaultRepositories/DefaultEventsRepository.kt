@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import okhttp3.ResponseBody
 import retrofit2.Response
 
-class DefaultEventsRepository(
+class DefaultEventsRepository(  // aldrei notad!
     private val offlineRepo: OfflineEventsRepository,
     private val onlineRepo: OnlineEventsRepository
 ) : EventsRepository {
@@ -139,7 +139,7 @@ class DefaultEventsRepository(
         updatedEvent?.let { offlineRepo.updateEvent(it) }
     }
 
-    suspend fun postComment(eventId: Long, userId: Long, comment: String): Response<Comment> {
+    suspend fun postComment(eventId: Long, userId: Long, comment: Comment): Response<Comment> {
         return onlineRepo.postComment(eventId, userId, comment)
     }
 

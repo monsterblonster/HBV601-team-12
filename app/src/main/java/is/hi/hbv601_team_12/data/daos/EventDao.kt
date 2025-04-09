@@ -20,10 +20,10 @@ interface EventDao {
     @Query("SELECT * FROM events WHERE id = :eventId")
     fun getEventById(eventId: Long): Flow<Event>
 
-    @Query("SELECT * FROM events ORDER BY startDateTime")
+    @Query("SELECT * FROM events ORDER BY date")
     fun getAllEvents(): Flow<List<Event>>
 
-    @Query("SELECT * FROM events WHERE creatorId = :userId ORDER BY startDateTime")
+    @Query("SELECT * FROM events WHERE creatorId = :userId ORDER BY date")
     fun getEventsByCreator(userId: Long): Flow<List<Event>>
 
     @Insert
@@ -48,12 +48,14 @@ interface EventDao {
     """)
     suspend fun getUsersForEvent(eventId: Long): List<User>
 
-    @Query("""
+    @Query(
+        """
         SELECT e.* FROM events e
         INNER JOIN event_participants ep ON e.id = ep.eventId
         WHERE ep.userId = :userId
-        ORDER BY e.startDateTime
-    """)
+        ORDER BY e.date
+    """
+    )
     fun getEventsForUser(userId: Long): Flow<List<Event>>
 
     @Query("SELECT EXISTS(SELECT 1 FROM event_participants WHERE eventId = :eventId AND userId = :userId)")

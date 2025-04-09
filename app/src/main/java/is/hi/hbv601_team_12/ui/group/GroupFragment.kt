@@ -133,6 +133,8 @@ class GroupFragment : Fragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val response = eventsRepository.getEventsByGroupId(groupId)
+                println("getEventsByGroupId response: $response")
+                println("getEventsByGroupId body: ${response.body()}")
                 if (response.isSuccessful) {
                     val events = response.body().orEmpty()
                     withContext(Dispatchers.Main) {

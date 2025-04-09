@@ -19,4 +19,5 @@ interface UsersRepository {
     suspend fun getUserByIdOffline(id: Long): User?
     suspend fun getUserByEmail(email: String): User?
     suspend fun getUserByUsername(username: String): User?
+    suspend fun removeGroup(userId: Long, groupId: Long): Response<User>
 }

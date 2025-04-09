@@ -13,7 +13,7 @@ interface GroupsRepository {
     suspend fun getGroupById(groupId: Long): Response<Group>
     suspend fun deleteGroupOnline(groupId: Long): Response<ResponseBody>
     suspend fun editGroupOnline(groupId: Long, updatedGroup: Group): Response<Group>
-    suspend fun removeUserFromGroup(groupId: Long, userId: Long, currentUser: String): Response<Group>
+    suspend fun removeUserFromGroup(groupId: Long, userId: Long, currentUserId: Long): Response<Group>
     suspend fun getGroupUsers(groupId: Long): Response<List<Long>>
     suspend fun getGroupTags(groupId: Long): Response<List<String>>
     suspend fun uploadGroupPicture(groupId: Long, imagePart: MultipartBody.Part): Response<ImageUploadResponse>

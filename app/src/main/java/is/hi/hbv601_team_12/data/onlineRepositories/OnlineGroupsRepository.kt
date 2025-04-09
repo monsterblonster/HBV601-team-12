@@ -64,9 +64,9 @@ class OnlineGroupsRepository {
         }
     }
 
-    suspend fun removeUserFromGroup(groupId: Long, userId: Long, currentUser: String): Response<Group> {
+    suspend fun removeUserFromGroup(groupId: Long, userId: Long, currentUserId: Long): Response<Group> {
         return try {
-            val response = RetrofitClient.groupsApiService.removeUserFromGroup(groupId, userId, currentUser)
+            val response = RetrofitClient.groupsApiService.removeUserFromGroup(groupId, userId, currentUserId)
             if (!response.isSuccessful) {
                 println("removeUserFromGroup failed: ${response.errorBody()?.string()}")
             }

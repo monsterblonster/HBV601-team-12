@@ -232,6 +232,8 @@ class GroupFragment : Fragment() {
                     R.id.action_invite_user -> {
                         if (isAdmin) {
                             showInviteDialog()
+                        } else if (currentGroup.allowUserInvites) {
+                            showInviteDialog()
                         } else {
                             Toast.makeText(requireContext(), "Only admins can invite users.", Toast.LENGTH_SHORT).show()
                         }
@@ -322,10 +324,12 @@ class GroupFragment : Fragment() {
 
     private fun leaveGroup() {
         val userId = getCurrentUserID()
+        println("Leaving group with groupId: $groupId and userId: $userId")
         if (groupId == null || userId == -1L) return
 
         lifecycleScope.launch(Dispatchers.IO) {
-            val response = groupsRepository.removeUserFromGroup(groupId!!, userId, userId.toString())
+            println("Leaving group with groupId: $groupId and userId: $userId")
+            val response = usersRepository.removeGroup(userId, groupId!!)
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Toast.makeText(requireContext(), "You have left the group!", Toast.LENGTH_SHORT).show()

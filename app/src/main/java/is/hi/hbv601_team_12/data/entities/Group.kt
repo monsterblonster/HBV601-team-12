@@ -14,7 +14,8 @@ data class Group(
     var maxMembers: Int = 10,
     var adminId: Long,
     var profilePicturePath: String? = null,
-    var members: List<Long> = emptyList()
+    var members: List<Long> = emptyList(),
+    var allowUserInvites: Boolean = false
 ) {
     fun updateMembers(newMembers: List<Long>): Group {
         return this.copy(members = newMembers)

@@ -38,7 +38,7 @@ interface GroupsApiService {
     ): Response<TagResponse>*/
 
     @POST("group/{id}/remove-user/{id2}")
-    suspend fun removeUserFromGroup(@Path("id") groupId: Long, @Path("id2") userId: Long, @Query("currentUser") currentUser: String): Response<Group>
+    suspend fun removeUserFromGroup(@Path("id") groupId: Long, @Path("id2") userId: Long, @Query("currentUser") currentUserId: Long): Response<Group>
 
     @GET("group/{id}/users")
     suspend fun getGroupUsers(@Path("id") groupId: Long): Response<List<Long>>

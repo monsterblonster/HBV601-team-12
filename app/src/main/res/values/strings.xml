@@ -88,7 +88,7 @@
     <string name="duration">Duration</string>
     <string name="location">Location</string>
     <string name="join_event">Join Event</string>
-
+    <string name="allow_user_invites">Allow user invites?</string>
 
 
 </resources>

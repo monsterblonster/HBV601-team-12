@@ -61,6 +61,32 @@
         android:background="@android:drawable/editbox_background"
         android:layout_marginBottom="20dp"/>
 
+    <LinearLayout
+        android:id="@+id/allowUserInvites"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="12dp"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:padding="4dp"
+            android:text="@string/allow_user_invites"
+            android:gravity="center"
+            />
+
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchAllowUserInvites"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+
+    </LinearLayout>
+
     <ImageView
         android:id="@+id/groupImageView"
         android:layout_width="120dp"

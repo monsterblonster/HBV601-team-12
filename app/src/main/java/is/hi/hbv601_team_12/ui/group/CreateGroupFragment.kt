@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -36,6 +37,7 @@ class CreateGroupFragment : Fragment() {
     private lateinit var groupMaxMembersInput: EditText
     private lateinit var createGroupButton: Button
     private lateinit var groupsRepository: GroupsRepository
+    private lateinit var allowUserInvites: SwitchCompat
 
     private lateinit var groupImageView: ImageView
     private lateinit var uploadGroupPictureButton: Button
@@ -54,6 +56,7 @@ class CreateGroupFragment : Fragment() {
         groupTagsInput = view.findViewById(R.id.groupTagsInput)
         groupMaxMembersInput = view.findViewById(R.id.groupMaxMembersInput)
         createGroupButton = view.findViewById(R.id.createGroupButton)
+        allowUserInvites = view.findViewById(R.id.switchAllowUserInvites)
 
         groupImageView = view.findViewById(R.id.groupImageView)
         uploadGroupPictureButton = view.findViewById(R.id.btnUploadGroupPicture)
@@ -140,6 +143,7 @@ class CreateGroupFragment : Fragment() {
         val groupDescription = groupDescriptionInput.text.toString().trim()
         val groupTags = groupTagsInput.text.toString().trim()
         val maxMembersText = groupMaxMembersInput.text.toString().trim()
+        val allowInvites = allowUserInvites.isChecked
 
         if (groupName.isEmpty()) {
             Toast.makeText(requireContext(), "Group Name is required", Toast.LENGTH_SHORT).show()
@@ -166,7 +170,8 @@ class CreateGroupFragment : Fragment() {
             tags = tagsList,
             maxMembers = maxMembers,
             adminId = adminId,
-            profilePicturePath = groupPicturePath
+            profilePicturePath = groupPicturePath,
+            allowUserInvites = allowInvites
         )
 
         lifecycleScope.launch(Dispatchers.IO) {

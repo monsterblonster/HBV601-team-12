@@ -116,6 +116,7 @@ class EditGroupFragment : Fragment() {
         binding.etGroupName.setText(group.groupName)
         binding.etGroupDescription.setText(group.description ?: "")
         binding.etGroupTags.setText(group.tags.joinToString(", "))
+        binding.switchAllowUserInvites.isChecked = group.allowUserInvites
 
         if (!group.profilePicturePath.isNullOrEmpty()) {
             if (group.profilePicturePath!!.startsWith("http")) {
@@ -211,6 +212,7 @@ class EditGroupFragment : Fragment() {
         val newName = binding.etGroupName.text.toString().trim()
         val newDescription = binding.etGroupDescription.text.toString().trim()
         val newTags = binding.etGroupTags.text.toString().trim().split(",").map { it.trim() }
+        val newAllowInvites = binding.switchAllowUserInvites.isChecked
 
         if (newName.isEmpty()) {
             Toast.makeText(requireContext(), "Group name cannot be empty!", Toast.LENGTH_SHORT).show()
@@ -237,7 +239,8 @@ class EditGroupFragment : Fragment() {
                 groupName = newName,
                 description = newDescription.ifEmpty { null },
                 profilePicturePath = finalPictureUrl,
-                tags = newTags
+                tags = newTags,
+                allowUserInvites = newAllowInvites
             )
 
             try {

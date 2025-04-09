@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.edit
 import androidx.core.view.MenuHost
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.format.DateTimeFormatter
 
 class ProfileFragment : Fragment() {
     private var _binding: FragmentProfileBinding? = null
@@ -74,8 +76,6 @@ class ProfileFragment : Fragment() {
 
         eventsRepository = OnlineEventsRepository()
 
-        binding.groupsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-
         invitesAdapter = InvitesAdapter(
             invites = mutableListOf(),
             onAccept = { invite -> acceptInvite(invite) },
@@ -85,7 +85,6 @@ class ProfileFragment : Fragment() {
         binding.invitesRecyclerView.adapter = invitesAdapter
 
         loadUserProfile()
-
         setupMenu()
     }
 
@@ -116,113 +115,6 @@ class ProfileFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun loadUserProfile() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Activity.MODE_PRIVATE)
-            val userId = sharedPref.getLong("loggedInUserId", -1L)
-
-            if (userId == -1L) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "No logged-in user found!", Toast.LENGTH_SHORT).show()
-                }
-                return@launch
-            }
-
-            try {
-                val response = usersRepository.getUserById(userId)
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        response.body()?.let { user ->
-                            currentUser = user
-
-                            binding.tvFullName.text = user.fullName
-                            binding.tvUsername.text = getString(R.string.username_format, user.userName)
-                            binding.tvEmail.text = user.emailAddress
-                            binding.tvPhoneNumber.text = user.phoneNumber
-                            binding.tvAddress.text = user.address
-
-                            if (!user.profilePicturePath.isNullOrEmpty()) {
-                                binding.ivProfilePicture.load(user.profilePicturePath) {
-                                    crossfade(true)
-                                    placeholder(R.drawable.default_profile)
-                                    error(R.drawable.default_profile)
-                                }
-                            } else {
-                                binding.ivProfilePicture.setImageResource(R.drawable.default_profile)
-                            }
-
-                            loadUserGroups(userId)
-                            loadUserEvents(userId)
-                            loadUserInvites()
-                        } ?: run {
-                            Toast.makeText(requireContext(), "User not found!", Toast.LENGTH_SHORT).show()
-                        }
-                    } else {
-                        Toast.makeText(requireContext(), "Failed to load profile: ${response.message()}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
-
-
-
-    private fun loadUserGroups(userId: Long) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val response = groupsRepository.pullUserGroupsOnline(userId)
-                if (!response.isSuccessful) {
-                    Log.e("ProfileFragment", "pullUserGroupsOnline failed: ${response.message()}")
-                }
-
-                val userGroups = usersRepository.getUserByIdOffline(userId)?.groups
-                val groups: MutableList<Group> = mutableListOf()
-                userGroups?.forEach { groupId ->
-                    groupsRepository.getGroupStream(groupId).collect { group ->
-                        if (group != null) {
-                            groups.add(group)
-                        } else {
-                            Log.e("ProfileFragment", "Group with ID $groupId not found")
-                        }
-                    }
-                }
-
-
-                // change so it only fetches the user's groups
-                var userGroupsFlow: Flow<List<Group>> = flowOf(groups)
-
-                userGroupsFlow.collect { groups ->
-                    Log.d("ProfileFragment", "Received ${groups.size} groups from the database")
-                    withContext(Dispatchers.Main) {
-                        if (!isAdded || _binding == null) return@withContext
-
-                        if (groups.isEmpty()) {
-                            binding.noGroupsTextView.visibility = View.VISIBLE
-                            binding.groupsRecyclerView.visibility = View.GONE
-                        } else {
-                            binding.noGroupsTextView.visibility = View.GONE
-                            binding.groupsRecyclerView.visibility = View.VISIBLE
-                            groupsAdapter = GroupsAdapter(groups, userId) { groupId ->
-                                onGroupClicked(groupId)
-                            }
-                            binding.groupsRecyclerView.adapter = groupsAdapter
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    if (!isAdded || _binding == null) return@withContext
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
 
 
     private fun loadUserInvites() {
@@ -302,13 +194,6 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private fun onGroupClicked(groupId: String) {
-        val bundle = Bundle().apply {
-            putString("groupId", groupId)
-        }
-        findNavController().navigate(R.id.action_profileFragment_to_groupFragment, bundle)
-    }
-
     private fun showLogoutConfirmation() {
         AlertDialog.Builder(requireContext())
             .setTitle("Logout")
@@ -326,29 +211,112 @@ class ProfileFragment : Fragment() {
         //requireActivity().finish()
     }
 
-    private fun loadUserEvents(userId: Long) {
+
+
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+    private fun loadUserProfile() {
         lifecycleScope.launch(Dispatchers.IO) {
+            val sharedPref = requireActivity().getSharedPreferences("VibeVaultPrefs", Activity.MODE_PRIVATE)
+            val userId = sharedPref.getLong("loggedInUserId", -1L)
+
+            if (userId == -1L) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "No logged-in user found!", Toast.LENGTH_SHORT).show()
+                }
+                return@launch
+            }
+
             try {
-                val response = eventsRepository.getEventsForUser(userId)
-                if (response.isSuccessful) {
-                    val events = response.body().orEmpty()
-                    withContext(Dispatchers.Main) {
-                        if (events.isEmpty()) {
-                            binding.noEventsTextView.visibility = View.VISIBLE
-                            binding.eventsRecyclerView.visibility = View.GONE
-                        } else {
-                            binding.noEventsTextView.visibility = View.GONE
-                            binding.eventsRecyclerView.visibility = View.VISIBLE
-                            eventsAdapter = EventsAdapter(events) { eventId ->
-                                navigateToEvent(eventId)
-                            }
-                            binding.eventsRecyclerView.adapter = eventsAdapter
+                // Load user profile
+                val userResponse = usersRepository.getUserById(userId)
+                // Load events in parallel
+                val eventsResponse = eventsRepository.getEventsForUser(userId)
+
+                withContext(Dispatchers.Main) {
+                    if (userResponse.isSuccessful) {
+                        userResponse.body()?.let { user ->
+                            currentUser = user
+                            displayUserProfile(user)
                         }
                     }
+
+                    if (eventsResponse.isSuccessful) {
+                        val allEvents = eventsResponse.body().orEmpty()
+                        displayUpcomingEvent(allEvents)
+                    }
+
+                    loadUserInvites()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Error fetching events: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun displayUserProfile(user: User) {
+        binding.tvFullName.text = user.fullName
+        binding.tvUsername.text = getString(R.string.username_format, user.userName)
+        binding.tvEmail.text = user.emailAddress
+        binding.tvPhoneNumber.text = user.phoneNumber
+        binding.tvAddress.text = user.address
+
+        if (!user.profilePicturePath.isNullOrEmpty()) {
+            binding.ivProfilePicture.load(user.profilePicturePath) {
+                crossfade(true)
+                placeholder(R.drawable.default_profile)
+                error(R.drawable.default_profile)
+            }
+        } else {
+            binding.ivProfilePicture.setImageResource(R.drawable.default_profile)
+        }
+    }
+
+    private fun displayUpcomingEvent(events: List<Event>) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val userId = currentUser?.id ?: return@launch
+
+            // Filter events to only show upcoming ones (not declined)
+            val upcomingEvents = events.filter { event ->
+                try {
+                    val goingResponse = eventsRepository.getGoingUsers(event.id)
+                    val maybeResponse = eventsRepository.getMaybeUsers(event.id)
+                    val invitedResponse = eventsRepository.getInvitedUsers(event.id)
+// TODO invited
+                    val isGoing = goingResponse.body()?.any { it.id == userId } ?: false
+                    val isMaybe = maybeResponse.body()?.any { it.id == userId } ?: false
+                    val isInvited = invitedResponse.body()?.any { it.id == userId } ?: false
+
+
+                    isGoing || isMaybe || isInvited
+                } catch (e: Exception) {
+                    false
+                }
+            }.sortedBy { it.date }
+
+            withContext(Dispatchers.Main) {
+                if (upcomingEvents.isNotEmpty()) {
+                    val nextEvent = upcomingEvents.first()
+
+                    binding.upcomingEventView.eventNameTextView.text = nextEvent.name
+                    binding.upcomingEventView.eventDateTimeTextView.text =
+                        nextEvent.date?.format(DateTimeFormatter.ofPattern("EEEE, MMM d 'at' h:mm a"))
+                            ?: "Time not set"
+
+                    binding.upcomingEventCard.setOnClickListener {
+                        navigateToEvent(nextEvent.id)
+                    }
+
+                    binding.upcomingEventCard.visibility = View.VISIBLE
+                    binding.noUpcomingEventText.visibility = View.GONE
+                } else {
+                    binding.upcomingEventCard.visibility = View.GONE
+                    binding.noUpcomingEventText.visibility = View.VISIBLE
                 }
             }
         }
@@ -361,8 +329,4 @@ class ProfileFragment : Fragment() {
         findNavController().navigate(R.id.action_profileFragment_to_eventFragment, bundle)
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
 }

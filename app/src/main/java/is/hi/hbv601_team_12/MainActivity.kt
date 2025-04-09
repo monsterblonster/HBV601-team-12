@@ -18,11 +18,15 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import `is`.hi.hbv601_team_12.data.AppDatabase
+import `is`.hi.hbv601_team_12.data.defaultRepositories.DefaultGroupsRepository
 import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository
 import `is`.hi.hbv601_team_12.data.onlineRepositories.OnlineUsersRepository
 import `is`.hi.hbv601_team_12.data.defaultRepositories.DefaultUsersRepository
 import `is`.hi.hbv601_team_12.data.entities.Group
 import `is`.hi.hbv601_team_12.data.entities.Notification
+import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineGroupsRepository
+import `is`.hi.hbv601_team_12.data.onlineRepositories.OnlineGroupsRepository
+import `is`.hi.hbv601_team_12.data.repositories.GroupsRepository
 import `is`.hi.hbv601_team_12.data.repositories.UsersRepository
 import `is`.hi.hbv601_team_12.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var defaultUsersRepository: UsersRepository
+    private lateinit var groupsRepository: GroupsRepository
 
     private var userId: Long = -1L
 
@@ -65,6 +70,10 @@ class MainActivity : AppCompatActivity() {
         val onlineRepo = OnlineUsersRepository(offlineRepo)
         defaultUsersRepository = DefaultUsersRepository(offlineRepo, onlineRepo)
 
+        val offlineGroupsRepo = OfflineGroupsRepository(db.groupDao())
+        val onlineGroupsRepo = OnlineGroupsRepository()
+        groupsRepository = DefaultGroupsRepository(offlineGroupsRepo, onlineGroupsRepo)
+
         if (isLoggedIn && userId != -1L) {
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
@@ -76,6 +85,12 @@ class MainActivity : AppCompatActivity() {
                                 lifecycleScope.launch(Dispatchers.IO) {
                                     defaultUsersRepository.cacheUser(user)
                                 }
+
+                                // Fetch user groups
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    groupsRepository.pullUserGroupsOnline(userId)
+                                }
+                                // Update the sidebar groups
 
                                 lifecycleScope.launch(Dispatchers.IO) {
                                     db.groupDao().getAllGroups().collect { allGroups ->
@@ -251,8 +266,6 @@ class MainActivity : AppCompatActivity() {
         }
         navController.navigate(R.id.loginFragment)
     }
-
-
 
   //  override fun onCreateOptionsMenu(menu: Menu): Boolean {
   //      menuInflater.inflate(R.menu.main, menu)

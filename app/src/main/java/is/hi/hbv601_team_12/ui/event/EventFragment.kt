@@ -216,15 +216,14 @@ class EventFragment : Fragment() {
                 if (goingResponse.isSuccessful && maybeResponse.isSuccessful &&
                     cantGoResponse.isSuccessful && invitedResponse.isSuccessful
                 ) {
-                    val goingUsers = goingResponse.body().orEmpty().toSet()
-                    val maybeUsers = maybeResponse.body().orEmpty().toSet()
-                    val cantGoUsers = cantGoResponse.body().orEmpty().toSet()
+                    val goingUsers = goingResponse.body().orEmpty()
+                    val maybeUsers = maybeResponse.body().orEmpty()
+                    val cantGoUsers = cantGoResponse.body().orEmpty()
                     val invitedUsers = invitedResponse.body().orEmpty()
                         .filterNot { user ->
                             // Exclude users who are in other statuses
                             user in goingUsers || user in maybeUsers || user in cantGoUsers
                         }
-                        .toSet()
 
                     val participants = mutableListOf<ParticipantWithStatus>().apply {
                         addAll(goingUsers.map { ParticipantWithStatus(it, ParticipantStatus.GOING) })

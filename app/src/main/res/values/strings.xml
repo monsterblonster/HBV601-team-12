@@ -95,5 +95,7 @@
     <string name="status_declined">CAN\'T GO</string>
     <string name="status_invited">INVITED</string>
 
-
+    <string name="next_event">Your Next Event</string>
+    <string name="no_upcoming_events">No upcoming events</string>
+    <string name="upcoming_event">Upcoming Event</string>
 </resources>

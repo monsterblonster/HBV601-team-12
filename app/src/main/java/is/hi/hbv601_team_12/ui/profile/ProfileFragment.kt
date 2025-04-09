@@ -267,7 +267,7 @@ class ProfileFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Toast.makeText(requireContext(), "Invite accepted!", Toast.LENGTH_SHORT).show()
-                    loadUserInvites()
+                    loadUserProfile()
                 } else {
                     Toast.makeText(requireContext(),
                         "Error accepting invite: ${response.message()}",

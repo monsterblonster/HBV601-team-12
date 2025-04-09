@@ -18,6 +18,9 @@ data class User(
     var groups: List<Long> = emptyList(),
     var ownedEvents: List<Long> = emptyList(),
     var eventsGoing: List<Long> = emptyList(),
+    var eventsInvited: List<Long> = emptyList(),
+    var eventsMaybe: List<Long> = emptyList(),
+    var eventsCantGo: List<Long> = emptyList()
 ){
     @Ignore
     var confirmPassword: String? = null

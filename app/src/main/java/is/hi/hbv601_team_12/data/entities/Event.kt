@@ -19,6 +19,7 @@ data class Event(
     var going: List<Long> = emptyList(),
     var maybe: List<Long> = emptyList(),
     var cantGo: List<Long> = emptyList(),
+    var invited: List<Long> = emptyList(),
     var comments: List<Long> = emptyList(),
 
 

@@ -132,6 +132,23 @@ class OnlineEventsRepository {
             createErrorResponse(e)
         }
     }
+    suspend fun getInvitedUsers(eventId: Long): Response<List<User>> {
+        return try {
+            val response = eventsApiService.getInvitedUsers(eventId)
+            if (!response.isSuccessful) {
+                println("getInvitedUsers failed: ${response.errorBody()?.string()}")
+            }
+            response
+        } catch (e: IOException) {
+            println("Network Error in getInvitedUsers: ${e.message}")
+            createErrorResponse(e)
+        }
+    }
+
+
+    suspend fun inviteUserToEvent(eventId: Long, userId: Long): Response<Unit> {
+        return eventsApiService.inviteUserToEvent(eventId, userId)
+    }
 
     // CHANGED: match server return type
     suspend fun getCantGoUsers(eventId: Long): Response<List<User>> {

@@ -144,16 +144,6 @@
                 android:text="@string/view_comments"
                 app:strokeColor="@color/purple_500"
                 android:textColor="@color/purple_500" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/joinEventButton"
-                style="@style/Widget.MaterialComponents.Button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/join_event"
-                android:backgroundTint="@color/purple_500"
-                android:textColor="@color/white" />
         </LinearLayout>
 
         <!-- Participants Section -->

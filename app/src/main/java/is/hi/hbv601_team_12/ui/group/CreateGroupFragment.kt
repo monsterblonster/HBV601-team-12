@@ -173,12 +173,18 @@ class CreateGroupFragment : Fragment() {
             val response = groupsRepository.createGroup(newGroup, adminUsername)
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
-                    Toast.makeText(requireContext(), "Group Created Successfully!", Toast.LENGTH_SHORT).show()
-                    findNavController().navigate(R.id.action_createGroupFragment_to_profileFragment)
+                    groupsRepository.pullUserGroupsOnline(adminId)
+
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Group Created Successfully!", Toast.LENGTH_SHORT).show()
+                        findNavController().navigate(R.id.action_createGroupFragment_to_profileFragment)
+                    }
                 } else {
-                    Toast.makeText(requireContext(), "Server Error: ${response.message()}", Toast.LENGTH_SHORT).show()
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Server Error: ${response.message()}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
+}
 }

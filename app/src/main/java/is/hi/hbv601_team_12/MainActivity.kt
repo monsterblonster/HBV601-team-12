@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
@@ -20,6 +21,7 @@ import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.offlineRepositories.OfflineUsersRepository
 import `is`.hi.hbv601_team_12.data.onlineRepositories.OnlineUsersRepository
 import `is`.hi.hbv601_team_12.data.defaultRepositories.DefaultUsersRepository
+import `is`.hi.hbv601_team_12.data.entities.Group
 import `is`.hi.hbv601_team_12.data.entities.Notification
 import `is`.hi.hbv601_team_12.data.repositories.UsersRepository
 import `is`.hi.hbv601_team_12.databinding.ActivityMainBinding
@@ -74,6 +76,44 @@ class MainActivity : AppCompatActivity() {
                                 lifecycleScope.launch(Dispatchers.IO) {
                                     defaultUsersRepository.cacheUser(user)
                                 }
+
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    db.groupDao().getAllGroups().collect { allGroups ->
+                                        val userGroups = allGroups.filter { group -> user.id in group.members }
+                                        withContext(Dispatchers.Main) {
+                                            updateSidebarGroups(userGroups)
+                                        }
+                                    }
+                                }
+
+                                navView.setNavigationItemSelectedListener { item ->
+                                    val groupId = item.itemId.toLong()
+
+                                    lifecycleScope.launch(Dispatchers.IO) {
+                                        val matchedGroup = db.groupDao().getGroup(groupId)
+
+                                        withContext(Dispatchers.Main) {
+                                            if (matchedGroup != null) {
+                                                val bundle = Bundle().apply {
+                                                    putString("groupId", matchedGroup.id.toString())
+                                                }
+                                                supportFragmentManager
+                                                    .findFragmentById(R.id.nav_host_fragment_content_main)
+                                                    ?.findNavController()
+                                                    ?.navigate(R.id.GroupFragment, bundle)
+
+                                                binding.drawerLayout.closeDrawers()
+                                            } else {
+                                                NavigationUI.onNavDestinationSelected(item, navController)
+                                                binding.drawerLayout.closeDrawers()
+                                            }
+                                        }
+                                    }
+
+                                    true
+                                }
+
+
                                 if (navController.currentDestination?.id != R.id.profileFragment) {
                                     navController.navigate(R.id.profileFragment)
                                 }
@@ -82,22 +122,14 @@ class MainActivity : AppCompatActivity() {
                             }
                         } else {
                             when (response.code()) {
-                                401, 404 -> {
-                                    handleFailedLogin(navController, sharedPref)
-                                }
-                                else -> {
-                                    attemptOfflineLogin(navController, sharedPref, userId)
-                                }
+                                401, 404 -> handleFailedLogin(navController, sharedPref)
+                                else -> attemptOfflineLogin(navController, sharedPref, userId)
                             }
                         }
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Network Error: ${e.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(this@MainActivity, "Network Error: ${e.message}", Toast.LENGTH_SHORT).show()
                         attemptOfflineLogin(navController, sharedPref, userId)
                     }
                 }
@@ -177,8 +209,17 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    private fun updateSidebarGroups(userGroups: List<Group>) {
+        val navView = binding.navView
+        val menu = navView.menu
+        val groupItem = menu.findItem(R.id.nav_groups)
+        val groupSubMenu = groupItem.subMenu
+        groupSubMenu?.clear()
 
-
+        for (group in userGroups) {
+            groupSubMenu?.add(Menu.NONE, group.id.toInt(), Menu.NONE, group.groupName)
+        }
+    }
 
     private fun attemptOfflineLogin(
         navController: androidx.navigation.NavController,
@@ -210,6 +251,8 @@ class MainActivity : AppCompatActivity() {
         }
         navController.navigate(R.id.loginFragment)
     }
+
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)

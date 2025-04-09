@@ -101,6 +101,29 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"/>
 
+    <!-- Profile Picture Section -->
+    <Button
+        android:id="@+id/btnUploadPicture"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/upload_picture"
+        app:layout_constraintTop_toBottomOf="@id/etPhoneNumber"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/ivProfilePicture"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"/>
+
+    <Button
+        android:id="@+id/btnTakePicture"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/take_picture"
+        app:layout_constraintTop_toBottomOf="@id/btnUploadPicture"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/ivProfilePicture"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"/>
+
     <ImageView
         android:id="@+id/ivProfilePicture"
         android:layout_width="120dp"
@@ -108,37 +131,15 @@
         android:scaleType="centerCrop"
         android:contentDescription="@string/profile_picture_desc"
         app:layout_constraintTop_toBottomOf="@id/etPhoneNumber"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>
-
-    <Button
-        android:id="@+id/btnUploadPicture"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/upload_picture"
-        app:layout_constraintTop_toBottomOf="@id/ivProfilePicture"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"/>
-
-    <Button
-        android:id="@+id/btnTakePicture"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/take_picture"
-        app:layout_constraintTop_toBottomOf="@id/btnUploadPicture"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"/>
-
 
     <Button
         android:id="@+id/btnRegister"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/register"
-        app:layout_constraintTop_toBottomOf="@id/etPhoneNumber"
+        app:layout_constraintTop_toBottomOf="@id/btnTakePicture"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>

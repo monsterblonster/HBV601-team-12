@@ -1,6 +1,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
@@ -52,46 +53,28 @@
         android:layout_marginTop="8dp"/>
 
 
-    <EditText
-        android:id="@+id/etGroupTags"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:autofillHints="tags"
-        android:hint="@string/group_tags"
-        android:inputType="text"
-        android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etGroupDescription" />
-
     <LinearLayout
         android:id="@+id/allowUserInvites"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/etGroupTags"
-        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        >
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etGroupDescription">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:padding="4dp"
-            android:text="@string/allow_user_invites"
             android:gravity="center"
-            />
+            android:padding="4dp"
+            android:text="@string/allow_user_invites" />
 
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switchAllowUserInvites"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            />
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 

@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
+import `is`.hi.hbv601_team_12.MainActivity
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.defaultRepositories.*
@@ -86,6 +87,7 @@ class ProfileFragment : Fragment() {
 
         loadUserProfile()
         setupMenu()
+
     }
 
     private fun setupMenu() {
@@ -159,6 +161,7 @@ class ProfileFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Toast.makeText(requireContext(), "Invite accepted!", Toast.LENGTH_SHORT).show()
+                    (requireActivity() as? MainActivity)?.recreate() // svo eg þarf ekki að rrestarta til að sja groups
                     loadUserProfile()
                 } else {
                     Toast.makeText(requireContext(),

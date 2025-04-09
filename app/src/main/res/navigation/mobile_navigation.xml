@@ -71,6 +71,11 @@
     </fragment>
 
     <fragment
+        android:id="@+id/groupFragment"
+        android:name="is.hi.hbv601_team_12.ui.group.GroupFragment"
+        android:label="Group"
+        tools:layout="@layout/fragment_group"/>
+    <fragment
         android:id="@+id/editProfileFragment"
         android:name="is.hi.hbv601_team_12.ui.profile.EditProfileFragment"
         android:label="Edit Profile"

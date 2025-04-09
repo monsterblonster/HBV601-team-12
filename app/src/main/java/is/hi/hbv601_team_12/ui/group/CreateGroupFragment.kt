@@ -16,6 +16,7 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import `is`.hi.hbv601_team_12.MainActivity
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.entities.Group
@@ -53,7 +54,6 @@ class CreateGroupFragment : Fragment() {
 
         groupNameInput = view.findViewById(R.id.groupNameInput)
         groupDescriptionInput = view.findViewById(R.id.groupDescriptionInput)
-        groupTagsInput = view.findViewById(R.id.groupTagsInput)
         groupMaxMembersInput = view.findViewById(R.id.groupMaxMembersInput)
         createGroupButton = view.findViewById(R.id.createGroupButton)
         allowUserInvites = view.findViewById(R.id.switchAllowUserInvites)
@@ -141,7 +141,7 @@ class CreateGroupFragment : Fragment() {
     private fun createGroup() {
         val groupName = groupNameInput.text.toString().trim()
         val groupDescription = groupDescriptionInput.text.toString().trim()
-        val groupTags = groupTagsInput.text.toString().trim()
+        val groupTags = null
         val maxMembersText = groupMaxMembersInput.text.toString().trim()
         val allowInvites = allowUserInvites.isChecked
 
@@ -161,18 +161,18 @@ class CreateGroupFragment : Fragment() {
             return
         }
 
-        val tagsList = if (groupTags.isEmpty()) emptyList()
-        else groupTags.split(",").map { it.trim() }
 
         val newGroup = Group(
             groupName = groupName,
             description = groupDescription.ifEmpty { null },
-            tags = tagsList,
+            tags = emptyList(),
             maxMembers = maxMembers,
             adminId = adminId,
             profilePicturePath = groupPicturePath,
             allowUserInvites = allowInvites
         )
+
+
 
         lifecycleScope.launch(Dispatchers.IO) {
             val response = groupsRepository.createGroup(newGroup, adminUsername)
@@ -182,6 +182,7 @@ class CreateGroupFragment : Fragment() {
 
                     withContext(Dispatchers.Main) {
                         Toast.makeText(requireContext(), "Group Created Successfully!", Toast.LENGTH_SHORT).show()
+                        (requireActivity() as? MainActivity)?.recreate() // svo eg þarf ekki að rrestarta til að sja groups
                         findNavController().navigate(R.id.action_createGroupFragment_to_profileFragment)
                     }
                 } else {

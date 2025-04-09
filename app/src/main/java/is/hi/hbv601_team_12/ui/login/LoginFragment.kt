@@ -88,6 +88,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import `is`.hi.hbv601_team_12.MainActivity
 import `is`.hi.hbv601_team_12.R
 import `is`.hi.hbv601_team_12.data.AppDatabase
 import `is`.hi.hbv601_team_12.data.entities.User
@@ -162,7 +163,7 @@ class LoginFragment : Fragment() {
                                 }
                             }
                         }
-
+                        (requireActivity() as? MainActivity)?.recreate() // svo madur ser ekki groupur hja sidasta user
                         Toast.makeText(requireContext(), "Login Successful!", Toast.LENGTH_SHORT).show()
                         findNavController().navigate(R.id.action_loginFragment_to_profileFragment)
                     } else {

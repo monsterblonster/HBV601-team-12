@@ -58,14 +58,7 @@ class EventFragment : Fragment() {
         }
 
         recyclerView.adapter = participantAdapter
-        recyclerView.layoutManager = GridLayoutManager(context, 2).apply {
-            spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                override fun getSpanSize(position: Int): Int {
-                    return 1
-                }
-            }
-        }
-
+        recyclerView.layoutManager = LinearLayoutManager(context)
 
         val commentsButton = view.findViewById<Button>(R.id.viewCommentsButton)
         commentsButton.setOnClickListener {

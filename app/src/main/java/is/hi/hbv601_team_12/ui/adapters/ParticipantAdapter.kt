@@ -45,6 +45,7 @@ class ParticipantAdapter : ListAdapter<ParticipantWithStatus, ParticipantAdapter
         private val currentUserId: Long
     ) : RecyclerView.ViewHolder(binding.root) {
 
+
         fun bind(participant: ParticipantWithStatus) {
             with(binding) {
                 tvParticipantName.text = participant.user.fullName
@@ -59,11 +60,20 @@ class ParticipantAdapter : ListAdapter<ParticipantWithStatus, ParticipantAdapter
                 } ?: run {
                     ivParticipantPicture.setImageResource(R.drawable.default_profile)
                 }
+
+                // Always reset all visibilities FIRST
+                btnGoing.visibility = View.GONE
+                btnMaybe.visibility = View.GONE
+                btnCantGo.visibility = View.GONE
+                userStatus.visibility = View.GONE
+
                 if (currentUserId == participant.user.id) {
-                    // Update button states based on current status
+                    // Show buttons for current user
+                    btnGoing.visibility = View.VISIBLE
+                    btnMaybe.visibility = View.VISIBLE
+                    btnCantGo.visibility = View.VISIBLE
                     updateButtonStates(participant.status)
 
-                    // Set click listeners for buttons
                     btnGoing.setOnClickListener {
                         statusChangeListener?.invoke(participant.user.id, ParticipantStatus.GOING)
                     }
@@ -71,22 +81,17 @@ class ParticipantAdapter : ListAdapter<ParticipantWithStatus, ParticipantAdapter
                         statusChangeListener?.invoke(participant.user.id, ParticipantStatus.MAYBE)
                     }
                     btnCantGo.setOnClickListener {
-                        statusChangeListener?.invoke(
-                            participant.user.id,
-                            ParticipantStatus.DECLINED
-                        )
+                        statusChangeListener?.invoke(participant.user.id, ParticipantStatus.DECLINED)
                     }
-                }
-                else {
-                    // Hide buttons for non-current users
-                    btnGoing.visibility = View.GONE
-                    btnMaybe.visibility = View.GONE
-                    btnCantGo.visibility = View.GONE
+                } else {
+                    // Show status for other users
                     userStatus.visibility = View.VISIBLE
                     userStatus.text = participant.status.toString()
                 }
             }
         }
+
+
 
         private fun updateButtonStates(currentStatus: ParticipantStatus) {
             with(binding) {

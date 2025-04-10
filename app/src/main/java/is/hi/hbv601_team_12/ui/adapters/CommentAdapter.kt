@@ -14,10 +14,15 @@ class CommentAdapter(
     class CommentViewHolder(private val binding: ItemCommentBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(comment: Comment) {
-            binding.commentAuthor.text = comment.authorName
-            binding.commentContent.text = comment.commentData
-            binding.commentDate.text = comment.commentTime?.format(DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a")) ?: "No date set"
+            val safeAuthor = comment.authorName?.takeIf { it.isNotBlank() } ?: "Anonymous"
+            val safeContent = comment.commentData?.takeIf { it.isNotBlank() } ?: "No comment provided"
+            val safeDate = comment.commentTime?.format(DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a")) ?: "No date set"
+
+            binding.commentAuthor.text = safeAuthor
+            binding.commentContent.text = safeContent
+            binding.commentDate.text = safeDate
         }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
